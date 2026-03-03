@@ -75,14 +75,14 @@ const CardView: React.FC<CardViewProps> = ({ items, onImageClick }) => {
                         const isCenterItem = index === current
                         return (
                             <CarouselItem
-                                key={item.id}
-                                className="pl-4 md:pl-8 basis-full md:basis-1/5"
+                                key={`${item.id}-${index}`}
+                                className="pl-4 md:pl-8 basis-full md:basis-1/5 md:py-20"
                             >
                                 <div className="flex items-center justify-center h-full py-12">
                                     <div
                                         className={`cursor-pointer transition-all relative duration-500 ease-out ${isCenterItem
                                             ? 'scale-100 z-50'
-                                            : 'scale-[0.8] opacity-60 z-10'
+                                            : 'scale-[0.5] opacity-60 -z-1'
                                             }`}
                                         onClick={() => onImageClick(item)}
                                     >
@@ -94,7 +94,7 @@ const CardView: React.FC<CardViewProps> = ({ items, onImageClick }) => {
                                             imageSrc={item.imageUrl}
                                             size='sm'
                                             layout="vertical"
-                                            className="w-full h-full max-h-[500px] object-contain drop-shadow-2xl"
+                                            className="w-full h-[70vh] md:h-[60vh] object-contain drop-shadow-2xl"
                                         />
                                     </div>
                                 </div>

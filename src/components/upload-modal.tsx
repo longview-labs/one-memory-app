@@ -905,6 +905,7 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload, in
                 <StampPreview
                     headline={title}
                     location={location}
+                    // size="lg"
                     handle={handle}
                     date={datetime ? new Date(datetime).toLocaleDateString() : new Date().toLocaleDateString()}
                     imageSrc={previewUrl}

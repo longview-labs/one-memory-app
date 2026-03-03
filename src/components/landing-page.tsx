@@ -301,7 +301,7 @@ const LandingPage: React.FC = () => {
             </div>
 
             {/* Main Content */}
-            <div className="relative z-10 flex-1 px-6 md:px-16 pb-10 overflow-hidden">
+            <div className="relative z-10 flex-1 px-6 md:px-16 pb-25 overflow-hidden">
                 {/* Welcome Section - Always Visible */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
                     {/* Left Content */}
@@ -443,7 +443,7 @@ const LandingPage: React.FC = () => {
             />
 
             <div className='absolute bottom-2 left-2 z-20'>
-                <Link to="/tnc" className='text-xs text-muted-foreground/80 px-1'>Terms & Conditions</Link>
+                <Link to="/tnc" className='text-muted-foreground/80 px-1'>Terms & Conditions</Link>
             </div>
         </div>
     )

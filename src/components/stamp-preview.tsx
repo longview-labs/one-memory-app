@@ -7,6 +7,7 @@ import { Button } from "./ui/button";
 import { ImageUp, Upload, Loader2 } from "lucide-react";
 import { Input } from "./ui/input";
 import { useRef, useEffect, useState } from "react";
+import { el } from "date-fns/locale/el";
 
 interface StampPreviewProps {
     headline: string;
@@ -29,7 +30,7 @@ interface StampPreviewProps {
 }
 
 // Base widths that the fixed sizes are designed for
-const BASE_WIDTH_VERTICAL = 512; // max-w-lg = 32rem = 512px
+const BASE_WIDTH_VERTICAL = 512; // max-w-lg = 32em = 512px
 const BASE_WIDTH_HORIZONTAL = 896; // approximate expected width for horizontal
 
 // Expected aspect ratios (width / height)
@@ -68,8 +69,10 @@ export default function StampPreview({
                 if (!containerRef.current) return;
                 
                 const rect = containerRef.current.getBoundingClientRect();
-                const visualWidth = rect.width;
-                const visualHeight = rect.height;
+                const layoutWidth = containerRef.current.offsetWidth;   // integer px, includes borders
+                const layoutHeight = containerRef.current.offsetHeight;
+                const visualWidth = layoutWidth;
+                const visualHeight = layoutHeight;
                 
                 // The aspect ratio for this layout (width/height)
                 const aspectRatio = noText ? 1 : (layout === 'horizontal' ? ASPECT_RATIO_HORIZONTAL : ASPECT_RATIO_VERTICAL);
@@ -159,6 +162,7 @@ export default function StampPreview({
                 className
             )}
             style={{
+                fontSize: size === 'sm' ? '20px' : size === 'lg' ? '12px' : '16px', // Base font size for scaling
                 backgroundImage: `url(${postcardBg})`,
                 backgroundSize: 'contain',
                 backgroundRepeat: 'no-repeat',
@@ -191,7 +195,7 @@ export default function StampPreview({
                         // Constrain width to effective visible area and center the text section
                         // width: effectiveWidth ? `${effectiveWidth}px` : '100%',
                         // margin: effectiveWidth ? '0 auto' : undefined,
-                        padding: `max(calc(var(--stamp-scale) * 2rem), 5%) max(calc(var(--stamp-scale) * 2.5rem), 5%)`,
+                        padding: `max(calc(var(--stamp-scale) * 2em), 5%) max(calc(var(--stamp-scale) * 2.5em), 5%)`,
                     }}
                 >
                     <div className={cn("space-y-4", layout === 'horizontal' && 'space-y-2')}>
@@ -203,14 +207,14 @@ export default function StampPreview({
                                 // suppressContentEditableWarning
                                 onBlur={(e) => onHeadlineChange?.(e.currentTarget.textContent || '')}
                                 className={cn(
-                                    "font-light w-full leading-tight cursor-text font-instrument text-left rounded focus:outline-2 outline-blue-400/50",
-                                    size === 'sm' ? 'text-2xl md:text-4xl min-h-[2rem] md:min-h-[2.5rem]' : size === 'lg' ? 'text-5xl md:text-8xl min-h-[3.5rem] md:min-h-[5rem]' : ''
+                                    "font-light w-full leading-tight h-[3.65em] overflow-hidden cursor-text font-instrument text-left rounded focus:outline-2 outline-blue-400/50",
+                                    // size === 'sm' ? 'text-2xl md:text-4xl min-h-[2em] md:min-h-[2.5em]' : size === 'lg' ? 'text-5xl md:text-8xl min-h-[3.5em] md:min-h-[5em]' : ''
                                 )}
-                                style={!size ? {
+                                style={{
                                     fontSize: layout === 'horizontal' 
-                                        ? `calc(var(--stamp-scale) * 4.5rem)`  // ~text-7xl equivalent
-                                        : `calc(var(--stamp-scale) * 3.75rem)`, // ~text-6xl equivalent
-                                } : undefined}
+                                        ? `calc(var(--stamp-scale) * 4.5em)`  // ~text-7xl equivalent
+                                        : `calc(var(--stamp-scale) * 3.75em)`, // ~text-6xl equivalent
+                                }}
                             >
                                 {headline}
                             </h1>
@@ -223,15 +227,15 @@ export default function StampPreview({
                         {/* Header with location and handle */}
                         <div 
                             className={cn("flex items-center justify-start")}
-                            style={{ gap: `calc(var(--stamp-scale) * 1rem)` }}
+                            style={{ gap: `calc(var(--stamp-scale) * 1em)` }}
                         >
                             <div 
                                 className="flex items-center max-w-1/2 w-full"
-                                style={{ gap: `calc(var(--stamp-scale) * 0.25rem)`, fontSize: `calc(var(--stamp-scale) * 0.75rem)` }}
+                                style={{ gap: `calc(var(--stamp-scale) * 0.25em)`, fontSize: `calc(var(--stamp-scale) * 0.75em)` }}
                             >
                                 <svg 
                                     className="flex-shrink-0" 
-                                    style={{ width: `calc(var(--stamp-scale) * 0.75rem)`, height: `calc(var(--stamp-scale) * 0.75rem)` }}
+                                    style={{ width: `calc(var(--stamp-scale) * 0.75em)`, height: `calc(var(--stamp-scale) * 0.75em)` }}
                                     fill="currentColor" 
                                     viewBox="0 0 20 20" 
                                     onClick={() => document.getElementById("location-text")?.focus()}
@@ -248,7 +252,7 @@ export default function StampPreview({
                             </div>
                             <div 
                                 className="relative max-w-1/2 w-full flex items-start"
-                                style={{ fontSize: `calc(var(--stamp-scale) * 0.75rem)` }}
+                                style={{ fontSize: `calc(var(--stamp-scale) * 0.75em)` }}
                             >
                                 {/* <span onClick={() => document.getElementById("handle-text")?.focus()} className="font-light">{handle.startsWith("@") ? "" : "@"}</span> */}
                                 <span
@@ -267,8 +271,8 @@ export default function StampPreview({
                         <div 
                             className={cn("flex items-end justify-between")}
                             style={{
-                                gap: `calc(var(--stamp-scale) * 1rem)`,
-                                marginTop: `calc(var(--stamp-scale) * 1.5rem)`,
+                                gap: `calc(var(--stamp-scale) * 1em)`,
+                                marginTop: `calc(var(--stamp-scale) * 1.5em)`,
                             }}
                         >
                         <div className="space-y-1">
@@ -293,9 +297,9 @@ export default function StampPreview({
                             className="relative"
                             style={{
                                 height: layout === 'horizontal' 
-                                    ? `calc(var(--stamp-scale) * 2rem)` 
-                                    : `calc(var(--stamp-scale) * 2.5rem)`,
-                                top: layout === 'horizontal' ? 0 : `calc(var(--stamp-scale) * 0.25rem)`,
+                                    ? `calc(var(--stamp-scale) * 2em)` 
+                                    : `calc(var(--stamp-scale) * 2.5em)`,
+                                top: layout === 'horizontal' ? 0 : `calc(var(--stamp-scale) * 0.25em)`,
                             }}
                         />
                     </div>
@@ -371,14 +375,14 @@ export default function StampPreview({
                         className="absolute text-white font-semibold tracking-wider z-10"
                         style={{
                             right: layout === 'horizontal' 
-                                ? `calc(var(--stamp-scale) * 2rem)` 
-                                : `calc(var(--stamp-scale) * 3rem)`,
+                                ? `calc(var(--stamp-scale) * 2em)` 
+                                : `calc(var(--stamp-scale) * 3em)`,
                             bottom: layout === 'horizontal' 
-                                ? `calc(var(--stamp-scale) * 2rem)` 
-                                : `calc(var(--stamp-scale) * 3rem)`,
+                                ? `calc(var(--stamp-scale) * 2em)` 
+                                : `calc(var(--stamp-scale) * 3em)`,
                             fontSize: layout === 'horizontal' 
-                                ? `calc(var(--stamp-scale) * 1rem)` 
-                                : `calc(var(--stamp-scale) * 1.125rem)`,
+                                ? `calc(var(--stamp-scale) * 1em)` 
+                                : `calc(var(--stamp-scale) * 1.125em)`,
                             writingMode: 'vertical-rl',
                             textOrientation: 'mixed',
                             letterSpacing: '0.2em',

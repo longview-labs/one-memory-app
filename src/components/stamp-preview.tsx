@@ -32,6 +32,10 @@ interface StampPreviewProps {
 const BASE_WIDTH_VERTICAL = 512; // max-w-lg = 32rem = 512px
 const BASE_WIDTH_HORIZONTAL = 896; // approximate expected width for horizontal
 
+// Expected aspect ratios (width / height)
+const ASPECT_RATIO_VERTICAL = 182 / 303;
+const ASPECT_RATIO_HORIZONTAL = 1 / ASPECT_RATIO_VERTICAL; // ~0.61
+
 export default function StampPreview({
     headline,
     location,
@@ -68,7 +72,7 @@ export default function StampPreview({
                 const visualHeight = rect.height;
                 
                 // The aspect ratio for this layout (width/height)
-                const aspectRatio = noText ? 1 : (layout === 'horizontal' ? 1.66 : 1/1.66);
+                const aspectRatio = noText ? 1 : (layout === 'horizontal' ? ASPECT_RATIO_HORIZONTAL : ASPECT_RATIO_VERTICAL);
                 
                 // Calculate what width would give us this height at the correct aspect ratio
                 const expectedWidthFromHeight = visualHeight * aspectRatio;
@@ -149,9 +153,8 @@ export default function StampPreview({
     return (
         <div
             ref={containerRef}
-            className={cn(`relative text-black overflow-clip`,
-                noText ? 'aspect-[1/1]' : layout === 'horizontal' ? 'aspect-[1.66/1]' : 'aspect-[1/1.66]',
-                !className?.includes('w-') && (noText ? 'w-[min(90vw,theme(maxWidth.2xl))]' : layout === 'horizontal' ? 'w-[min(90vw,theme(maxWidth.5xl))]' : 'w-[min(90vw,theme(maxWidth.lg))]'),
+                className={cn(`relative text-black overflow-clip`,
+                // !className?.includes('w-') && (noText ? 'w-[min(90vw,theme(maxWidth.2xl))]' : layout === 'horizontal' ? 'w-[min(90vw,theme(maxWidth.5xl))]' : 'w-[min(90vw,theme(maxWidth.lg))]'),
                 className
             )}
             style={{
@@ -167,6 +170,7 @@ export default function StampPreview({
                 WebkitMaskSize: 'contain',
                 WebkitMaskRepeat: 'no-repeat',
                 WebkitMaskPosition: 'center',
+                aspectRatio: noText ? '1 / 1' : (layout === 'horizontal' ? ASPECT_RATIO_HORIZONTAL : ASPECT_RATIO_VERTICAL),
                 // Pass scale factor as CSS custom property
                 '--stamp-scale': contentScale,
             } as React.CSSProperties}
@@ -326,7 +330,7 @@ export default function StampPreview({
                                     <div
                                         className={cn(
                                             "absolute bg-black/30 border border-white backdrop-blur-sm rounded-full p-3 cursor-pointer z-50 hover:bg-black/80 transition-colors",
-                                            noText ? "top-10 left-8" : "top-7 left-12"
+                                            noText ? "top-10 left-8" : "top-6 left-6"
                                         )}
                                         onClick={onReselect}
                                     >

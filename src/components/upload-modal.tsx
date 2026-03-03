@@ -558,7 +558,7 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload, in
                 disabled={isProcessing}
             />
             <div className={cn(
-                "relative bg-gradient-to-br overflow-scroll from-white via-white flex flex-col h-full to-purple-50 shadow-2xl rounded-lg !font-montserrat",
+                "relative flex-1 bg-gradient-to-br overflow-scroll from-white via-white flex flex-col h-full to-purple-50 shadow-2xl rounded-lg !font-montserrat",
                 isMobile ? "p-4 gap-4 max-w-full my-auto rounded-none" : "p-6 gap-6 max-w-xl max-h-[90vh] overflow-y-auto rounded-r-none"
             )}>
                 <button
@@ -900,7 +900,7 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload, in
             </div>
 
             {/* Preview section - desktop only */}
-            {!isMobile && <div className='flex flex-col relative gap-0 items-center justify-center bg-[#1E1E1E] rounded-r-lg !max-h-[90vh] h-full px-10'>
+            {!isMobile && <div className='flex flex-1 flex-col relative gap-0 items-center justify-center bg-[#1E1E1E] rounded-r-lg !max-h-[90vh] h-full px-10'>
                 <p className='absolute top-4 text-muted-foreground'>Preview</p>
                 <StampPreview
                     headline={title}
@@ -909,7 +909,7 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload, in
                     date={datetime ? new Date(datetime).toLocaleDateString() : new Date().toLocaleDateString()}
                     imageSrc={previewUrl}
                     layout={orientation}
-                    className={cn("scale-90", orientation === 'vertical' ? 'max-h-[80vh]' : 'min-w-2xl')}
+                    className={cn("scale-90 flex-1", orientation === 'vertical' ? 'max-h-[80vh]' : 'max-h-[26vw]')}
                     onReselect={handleReselect}
                     isProcessing={isProcessing}
                     onHeadlineChange={setTitle}

@@ -207,7 +207,7 @@ export default function StampPreview({
                                 // suppressContentEditableWarning
                                 onBlur={(e) => onHeadlineChange?.(e.currentTarget.textContent || '')}
                                 className={cn(
-                                    "font-light w-full leading-tight h-[3.65em] overflow-hidden cursor-text text-left rounded focus:outline-2 outline-blue-400/50",
+                                    "font-light w-full leading-tight max-h-[3.65em] overflow-hidden cursor-text text-left rounded focus:outline-2 outline-blue-400/50",
                                     // size === 'sm' ? 'text-2xl md:text-4xl min-h-[2em] md:min-h-[2.5em]' : size === 'lg' ? 'text-5xl md:text-8xl min-h-[3.5em] md:min-h-[5em]' : ''
                                 )}
                                 style={{

@@ -208,8 +208,8 @@ const ImageModal: React.FC<ImageModalProps> = ({ item, isOpen, onClose }) => {
         >
             {/* Stamp Preview - centered with animation */}
             <div
-                className={`relative flex items-center h-full justify-center transition-all duration-300 ease-out ${isMobile ? 'w-80' : 'w-[600px]'
-                    } ${isAnimating
+                className={`relative aspect-182/303 flex items-center h-full justify-center transition-all duration-300 ease-out ${isMobile ? 'max-w-[90vw]' : ''}
+                    ${isAnimating
                         ? 'opacity-100 scale-100 translate-y-0'
                         : 'opacity-0 scale-90 translate-y-4'
                     }`}
@@ -219,7 +219,7 @@ const ImageModal: React.FC<ImageModalProps> = ({ item, isOpen, onClose }) => {
                     variant="ghost"
                     size="lg"
                     onClick={onClose}
-                    className={`absolute -top-1 z-10 -right-6 bg-black/60 !opacity-50 hover:bg-black/80 text-white border-white/20 rounded-full w-12 h-12 p-0 transition-all duration-300 ${isAnimating ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
+                    className={`absolute -top-1 z-10 right-0 bg-black/60 !opacity-50 hover:bg-black/80 text-white border-white/20 rounded-full w-12 h-12 p-0 transition-all duration-300 ${isAnimating ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
                         }`}
                 >
                     <X className="!w-10 !h-10" />

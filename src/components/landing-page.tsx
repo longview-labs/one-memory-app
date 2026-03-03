@@ -363,7 +363,7 @@ const LandingPage: React.FC = () => {
 
     return (
         <div
-            className="min-h-screen max-h-screen bg-black relative overflow-scroll md:overflow-hidden"
+            className="flex flex-col min-h-screen max-h-screen bg-black relative overflow-scroll md:overflow-hidden"
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
@@ -379,12 +379,12 @@ const LandingPage: React.FC = () => {
             )}
 
             {/* Header */}
-            <div className="relative z-10 p-6">
+            <div className="fixed z-10 left-0 right-0 p-6">
                 <MemoriesLogo />
             </div>
 
             {/* Main Content */}
-            <div className="relative z-10 flex-1 px-6 md:px-16 py-10 md:py-0 md:-top-16 overflow-scroll md:overflow-hidden">
+            <div className="relative z-10 flex-1 px-6 md:px-16 py-10 md:py-0 overflow-scroll md:overflow-hidden">
                 {/* Welcome Section - Always Visible */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center h-[90vh]">
                     {/* Left Content */}
@@ -419,7 +419,7 @@ const LandingPage: React.FC = () => {
                     </div>
 
                     {/* Right Content - Stamp Preview */}
-                    <div className="flex justify-center items-center">
+                    <div className="pt-10 flex justify-center items-center">
                         <div className="relative w-full max-w-lg left-4 md:left-0">
                             {isLoadingMemories ? (
                                 <div className="flex items-center justify-center">

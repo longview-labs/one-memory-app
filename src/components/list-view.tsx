@@ -165,7 +165,7 @@ const ListViewComponent: React.FC<ListViewProps> = ({ items, onImageClick }) => 
                     })
                 }
             }
-        }, 10) // Reduced debounce for faster selection updates
+        }, 3) // Reduced debounce for faster selection updates
     }, [items.length])
 
     // Cleanup timeout on unmount
@@ -320,7 +320,7 @@ const ListViewComponent: React.FC<ListViewProps> = ({ items, onImageClick }) => 
 
                 <div className="w-full z-50 relative flex items-start justify-center pb-30">
                     {selectedItem && <StampPreview
-                        className='w-[90%] md:w-auto md:h-[80vh]'
+                        className='w-[90%] md:w-auto md:h-[75vh]'
                         // className={cn("", isMobile ? 'scale-40 -translate-y-1/4' : "scale-90 -translate-y-10")}
                         headline={selectedItem.title || 'Untitled Memory'}
                         location={selectedItem.metadata?.location || 'Unknown location'}

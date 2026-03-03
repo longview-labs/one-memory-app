@@ -131,7 +131,7 @@ const ImageModal: React.FC<ImageModalProps> = ({ item, isOpen, onClose }) => {
                     }).toUpperCase()}
                     imageSrc={item.imageUrl}
                     layout="vertical"
-                    className='w-[85vw] md:w-auto md:h-[80vh]'
+                    className='w-[85vw] sm:w-auto sm:h-[75vh]'
                 />
             </div>
 

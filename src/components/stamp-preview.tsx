@@ -107,7 +107,8 @@ export default function StampPreview({
         };
 
         // Initial calculation after a short delay to ensure styles are applied
-        setTimeout(calculateScaleAndOffset, 100);
+        // setTimeout(calculateScaleAndOffset, 100);
+        calculateScaleAndOffset()
 
         // Use ResizeObserver to detect size changes
         // const observer = new ResizeObserver(() => {
@@ -116,11 +117,11 @@ export default function StampPreview({
         // observer.observe(containerRef.current);
 
         // Also listen for window resize
-        // window.addEventListener('resize', calculateScaleAndOffset);
+        window.addEventListener('resize', calculateScaleAndOffset);
 
         return () => {
             // observer.disconnect();
-            // window.removeEventListener('resize', calculateScaleAndOffset);
+            window.removeEventListener('resize', calculateScaleAndOffset);
         };
     }, [layout, noText]);
 
@@ -188,9 +189,9 @@ export default function StampPreview({
                     )}
                     style={{
                         // Constrain width to effective visible area and center the text section
-                        width: effectiveWidth ? `${effectiveWidth}px` : '100%',
-                        margin: effectiveWidth ? '0 auto' : undefined,
-                        padding: `max(calc(var(--stamp-scale) * 2rem), 32px) max(calc(var(--stamp-scale) * 2.5rem), 32px)`,
+                        // width: effectiveWidth ? `${effectiveWidth}px` : '100%',
+                        // margin: effectiveWidth ? '0 auto' : undefined,
+                        padding: `max(calc(var(--stamp-scale) * 2rem), 5%) max(calc(var(--stamp-scale) * 2.5rem), 5%)`,
                     }}
                 >
                     <div className={cn("space-y-4", layout === 'horizontal' && 'space-y-2')}>

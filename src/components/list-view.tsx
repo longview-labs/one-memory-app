@@ -365,14 +365,14 @@ const ListViewComponent: React.FC<ListViewProps> = ({ items, onImageClick }) => 
             <div className="absolute top-0 left-0 right-0 h-20 bg-gradient-to-b from-black to-transparent z-10 pointer-events-none" />
             <div className={cn('h-full items-center justify-center', isMobile ? "flex flex-col" : "grid grid-cols-2")}>
                 <ScrollArea
-                    className={cn("h-full grow overflow-y-scroll overflow-x-clip max-w-screen p-0 [&_[data-radix-scroll-area-scrollbar]]:hidden [&_[data-radix-scroll-area-viewport]]:scrollbar-none [&_[data-radix-scroll-area-viewport]]:[-ms-overflow-style:none] [&_[data-radix-scroll-area-viewport]]:[-webkit-overflow-scrolling:touch]",
+                    className={cn("flex-1 md:h-full grow overflow-y-scroll overflow-x-clip max-w-screen p-0 [&_[data-radix-scroll-area-scrollbar]]:hidden [&_[data-radix-scroll-area-viewport]]:scrollbar-none [&_[data-radix-scroll-area-viewport]]:[-ms-overflow-style:none] [&_[data-radix-scroll-area-viewport]]:[-webkit-overflow-scrolling:touch]",
                         isMobile ? "" : ""
                     )}
                     ref={scrollAreaRef}
                     style={{ scrollBehavior: 'auto' }}
                     scrollHideDelay={0}
                 >
-                    <div className="p-10 md:px-16 tracking-[5px]" style={{ scrollBehavior: 'auto' }}>
+                    <div className="p-4 py-10 md:px-16 tracking-[5px]" style={{ scrollBehavior: 'auto' }}>
                         {infiniteItems.map((item, index) => {
                             const isSelected = selectedItem?.id === item.id
                             const originalIndex = index % items.length
@@ -421,9 +421,11 @@ const ListViewComponent: React.FC<ListViewProps> = ({ items, onImageClick }) => 
                     </div>
                     {isMobile && <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black to-transparent z-10 pointer-events-none" />}
                 </ScrollArea>
-                <div className={cn('z-50 relative flex items-start justify-center', isMobile && "h-1/2")}>
+
+                <div className="w-full z-50 relative flex items-start justify-center pb-30">
                     {selectedItem && <StampPreview
-                        className={cn("", isMobile ? 'scale-40 -translate-y-1/4' : "scale-90 -translate-y-10")}
+                        className='w-[90%] md:w-auto md:h-[80vh]'
+                        // className={cn("", isMobile ? 'scale-40 -translate-y-1/4' : "scale-90 -translate-y-10")}
                         headline={selectedItem.title || 'Untitled Memory'}
                         location={selectedItem.metadata?.location || 'Unknown location'}
                         handle="@memories"

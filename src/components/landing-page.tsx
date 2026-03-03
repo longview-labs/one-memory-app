@@ -345,7 +345,7 @@ const LandingPage: React.FC = () => {
                             ) : randomMemories.length >= 2 ? (
                                 <>
                                     {/* First postcard - back layer */}
-                                    <div className="absolute transform -rotate-5 -translate-x-10 md:-rotate-10 md:-translate-x-20 md:translate-y-10 translate-y-5 opacity-90 hover:opacity-80 transition-all duration-300 cursor-pointer" onClick={() => navigate(`/view/${randomMemories[0].id}`)}>
+                                    <div className="absolute h-full transform -rotate-5 -translate-x-10 md:-rotate-10 md:-translate-x-20 md:translate-y-10 translate-y-5 opacity-90 hover:opacity-80 transition-all duration-300 cursor-pointer" onClick={() => navigate(`/view/${randomMemories[0].id}`)}>
                                         <StampPreview
                                             headline={randomMemories[0].title}
                                             location={randomMemories[0].location}

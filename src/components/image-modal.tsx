@@ -81,7 +81,6 @@ const ImageModal: React.FC<ImageModalProps> = ({ item, isOpen, onClose }) => {
             element.style.position = 'absolute'
             element.style.left = '0'
             element.style.top = '0'
-            element.style.zIndex = '9999'
 
             // Wait for fonts to load
             await document.fonts.ready
@@ -200,30 +199,31 @@ const ImageModal: React.FC<ImageModalProps> = ({ item, isOpen, onClose }) => {
 
     return (
         <div
-            className={`fixed inset-0 z-50 flex flex-col items-center justify-center p-4 md:p-8 transition-all duration-300 ease-out ${isAnimating
+            className={`fixed inset-0 z-50 flex flex-col gap-10 items-center justify-center p-4 md:p-8 transition-all duration-300 ease-out ${isAnimating
                 ? 'bg-black/90 backdrop-blur-md'
                 : 'bg-black/0 backdrop-blur-none'
                 }`}
             onClick={handleBackdropClick}
         >
+            {/* Close button */}
+            <Button
+                variant="ghost"
+                size="lg"
+                onClick={onClose}
+                className={`absolute z-10 top-10 right-10 bg-black/60 !opacity-50 hover:bg-black/80 text-white border-white/20 rounded-full w-12 h-12 p-0 transition-all duration-300 ${isAnimating ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
+                    }`}
+            >
+                <X className="!w-10 !h-10" />
+            </Button>
+
             {/* Stamp Preview - centered with animation */}
             <div
-                className={`relative aspect-182/303 flex items-center h-full justify-center transition-all duration-300 ease-out ${isMobile ? 'max-w-[90vw]' : ''}
+                className={`relative flex items-center justify-center transition-all duration-300 ease-out ${isMobile ? 'max-w-[90vw]' : ''}
                     ${isAnimating
                         ? 'opacity-100 scale-100 translate-y-0'
                         : 'opacity-0 scale-90 translate-y-4'
                     }`}
             >
-                {/* Close button */}
-                <Button
-                    variant="ghost"
-                    size="lg"
-                    onClick={onClose}
-                    className={`absolute -top-1 z-10 right-0 bg-black/60 !opacity-50 hover:bg-black/80 text-white border-white/20 rounded-full w-12 h-12 p-0 transition-all duration-300 ${isAnimating ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
-                        }`}
-                >
-                    <X className="!w-10 !h-10" />
-                </Button>
                 <StampPreview
                     headline={item.title || 'Memory'}
                     location={details.location?.toUpperCase() || 'UNKNOWN LOCATION'}
@@ -235,17 +235,18 @@ const ImageModal: React.FC<ImageModalProps> = ({ item, isOpen, onClose }) => {
                     }).toUpperCase()}
                     imageSrc={item.imageUrl}
                     layout="vertical"
-                    className='w-full h-fit scale-90'
+                    className='h-[80vh] md:h-[80vh]'
                 />
             </div>
 
             {/* Hidden versions for capturing */}
             <div
                 ref={hiddenHorizontalRef}
-                className="absolute left-0 top-0 opacity-0 pointer-events-none"
+                className="absolute left-0 top-0 opacity-0 pointer-events-none -z-1"
                 style={{ visibility: 'hidden' }}
             >
                 <StampPreview
+                    className="h-[50vh]"
                     headline={item.title || 'Memory'}
                     location={details.location?.toUpperCase() || 'UNKNOWN LOCATION'}
                     handle="@memories"
@@ -260,10 +261,11 @@ const ImageModal: React.FC<ImageModalProps> = ({ item, isOpen, onClose }) => {
             </div>
             <div
                 ref={hiddenVerticalRef}
-                className="absolute left-0 top-0 opacity-0 pointer-events-none"
+                className="absolute left-0 top-0 opacity-0 pointer-events-none -z-1"
                 style={{ visibility: 'hidden' }}
             >
                 <StampPreview
+                    className="h-[50vh]"
                     headline={item.title || 'Memory'}
                     location={details.location?.toUpperCase() || 'UNKNOWN LOCATION'}
                     handle="@memories"

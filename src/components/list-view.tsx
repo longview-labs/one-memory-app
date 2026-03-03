@@ -7,8 +7,10 @@ import { ScrollArea } from './ui/scroll-area'
 import { Button } from './ui/button'
 import { Share2 } from 'lucide-react'
 import CopySharePopup from './copy-share-popup'
-import { domToBlob } from 'modern-screenshot'
 import type { CanvasItem } from './infinite-canvas'
+import StampCaptureRenderer from './stamp-capture-renderer'
+import { useStampCaptureShare } from '@/hooks/use-stamp-capture-share'
+import { getMemoryShareUrl, getMemoryTweetText } from '@/utils/share'
 
 interface ListViewProps {
     items: CanvasItem[]
@@ -18,17 +20,21 @@ interface ListViewProps {
 const ListViewComponent: React.FC<ListViewProps> = ({ items, onImageClick }) => {
     const [selectedItem, setSelectedItem] = useState<CanvasItem | null>(null)
     const [isModalOpen, setIsModalOpen] = useState(false)
-    const [isSharePopupOpen, setIsSharePopupOpen] = useState(false)
-    const [isCapturing, setIsCapturing] = useState(false)
-    const [capturedBlob, setCapturedBlob] = useState<Blob | null>(null)
     const isMobile = useIsMobile()
     const scrollAreaRef = useRef<HTMLDivElement>(null)
     const isScrollingRef = useRef(false)
     const desktopStampRef = useRef<HTMLDivElement>(null)
     const mobileStampRef = useRef<HTMLDivElement>(null)
-    const hiddenHorizontalRef = useRef<HTMLDivElement>(null)
-    const hiddenVerticalRef = useRef<HTMLDivElement>(null)
     const selectionUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+    const {
+        capturedBlob,
+        handleShare,
+        handleSharePopupClose,
+        hiddenHorizontalRef,
+        hiddenVerticalRef,
+        isCapturing,
+        isSharePopupOpen,
+    } = useStampCaptureShare({ captureLayout: isMobile ? 'horizontal' : 'vertical' })
 
     // Auto-select first item on desktop
     useEffect(() => {
@@ -63,124 +69,14 @@ const ListViewComponent: React.FC<ListViewProps> = ({ items, onImageClick }) => 
         setIsModalOpen(false)
     }
 
-    // Capture stamp as image for sharing
-    const captureStampAsImage = async (item: CanvasItem): Promise<Blob | null> => {
-        // Capture vertical on mobile, horizontal on desktop
-        const elementRef = isMobile ? hiddenVerticalRef : hiddenHorizontalRef
-        if (!elementRef.current) return null
-
-        try {
-            setIsCapturing(true)
-
-            // Temporarily make the selected version visible
-            const element = elementRef.current
-            const originalVisibility = element.style.visibility
-            const originalOpacity = element.style.opacity
-
-            element.style.visibility = 'visible'
-            element.style.opacity = '1'
-            element.style.position = 'absolute'
-            element.style.left = '0'
-            element.style.top = '0'
-            element.style.zIndex = '9999'
-
-            // Wait for fonts to load
-            await document.fonts.ready
-
-            // Force font loading by checking specific fonts
-            await Promise.all([
-                document.fonts.load('400 16px "Instrument Serif"'),
-                document.fonts.load('300 16px "Montserrat"'),
-                document.fonts.load('400 16px "Montserrat"'),
-                document.fonts.load('500 16px "Montserrat"')
-            ]).catch(() => {/* ignore font loading errors */ })
-
-            // Ensure all images within the element are loaded
-            const images = element.querySelectorAll('img')
-            await Promise.all(
-                Array.from(images).map(img => {
-                    if (img.complete) return Promise.resolve()
-                    return new Promise((resolve) => {
-                        img.onload = () => resolve(null)
-                        img.onerror = () => resolve(null)
-                    })
-                })
-            )
-
-            // Extra wait for rendering and layout
-            await new Promise(resolve => setTimeout(resolve, 800))
-
-            // Capture the horizontal stamp preview element as a blob
-            const blob = await domToBlob(element, {
-                scale: 3, // Higher quality (3x resolution for better text)
-                quality: 1, // Maximum quality
-                type: 'image/png',
-                features: {
-                    // Ensure text is captured properly
-                    removeControlCharacter: false,
-                },
-                fetch: {
-                    // Use CORS for loading external resources
-                    requestInit: {
-                        mode: 'cors',
-                        cache: 'force-cache'
-                    }
-                },
-                // Debug options - set to true to see what's being captured
-                debug: false,
-            })
-
-            // Hide it again
-            element.style.visibility = originalVisibility
-            element.style.opacity = originalOpacity
-            element.style.zIndex = ''
-
-            return blob
-        } catch (error) {
-            console.error('Error capturing stamp:', error)
-            // Make sure to hide it even if there's an error
-            const elementRef = isMobile ? hiddenVerticalRef : hiddenHorizontalRef
-            if (elementRef.current) {
-                const element = elementRef.current
-                element.style.visibility = 'hidden'
-                element.style.opacity = '0'
-                element.style.zIndex = ''
-            }
-            return null
-        } finally {
-            setIsCapturing(false)
-        }
-    }
-
-    const handleShare = async () => {
+    const handleShareClick = async () => {
         if (!selectedItem) return
-        const blob = await captureStampAsImage(selectedItem)
-        if (blob) {
-            setCapturedBlob(blob)
-            // Copy image to clipboard immediately
-            try {
-                if (navigator.clipboard && navigator.clipboard.write) {
-                    await navigator.clipboard.write([
-                        new ClipboardItem({
-                            'image/png': blob
-                        })
-                    ])
-                    console.log('Image copied to clipboard')
-                }
-            } catch (error) {
-                console.error('Failed to copy image to clipboard:', error)
-            }
-        }
-        setIsSharePopupOpen(true)
-    }
-
-    const handleSharePopupClose = () => {
-        setIsSharePopupOpen(false)
+        await handleShare()
     }
 
     const getTweetText = () => {
         if (!selectedItem) return ''
-        return `Check out this memory "${selectedItem.title || 'Memory'}" preserved forever! 🌟\n\nView it at: ${window.location.origin}/#/view/${selectedItem.id.slice(0, 43)}\n\n(paste the copied image here and remove this text)`
+        return getMemoryTweetText(selectedItem.title || 'Memory', getMemoryShareUrl(selectedItem.id))
     }
 
     // Function to get the index of current item
@@ -513,64 +409,32 @@ const ListViewComponent: React.FC<ListViewProps> = ({ items, onImageClick }) => 
                 </Dialog>
             )}
 
-            {/* Hidden versions for capturing */}
             {selectedItem && (
-                <>
-                    <div
-                        ref={hiddenHorizontalRef}
-                        className="absolute left-0 top-0 opacity-0 pointer-events-none"
-                        style={{ visibility: 'hidden' }}
-                    >
-                        <StampPreview
-                            headline={selectedItem.title || 'Untitled Memory'}
-                            location={selectedItem.metadata?.location?.toUpperCase() || 'UNKNOWN LOCATION'}
-                            handle="@memories"
-                            date={selectedItem.metadata?.date
-                                ? new Date(selectedItem.metadata.date).toLocaleDateString('en-US', {
-                                    year: 'numeric',
-                                    month: 'short',
-                                    day: 'numeric'
-                                }).toUpperCase()
-                                : new Date().toLocaleDateString('en-US', {
-                                    year: 'numeric',
-                                    month: 'short',
-                                    day: 'numeric'
-                                }).toUpperCase()
-                            }
-                            imageSrc={selectedItem.imageUrl}
-                            layout="horizontal"
-                        />
-                    </div>
-                    <div
-                        ref={hiddenVerticalRef}
-                        className="absolute left-0 top-0 opacity-0 pointer-events-none"
-                        style={{ visibility: 'hidden' }}
-                    >
-                        <StampPreview
-                            headline={selectedItem.title || 'Untitled Memory'}
-                            location={selectedItem.metadata?.location?.toUpperCase() || 'UNKNOWN LOCATION'}
-                            handle="@memories"
-                            date={selectedItem.metadata?.date
-                                ? new Date(selectedItem.metadata.date).toLocaleDateString('en-US', {
-                                    year: 'numeric',
-                                    month: 'short',
-                                    day: 'numeric'
-                                }).toUpperCase()
-                                : new Date().toLocaleDateString('en-US', {
-                                    year: 'numeric',
-                                    month: 'short',
-                                    day: 'numeric'
-                                }).toUpperCase()
-                            }
-                            imageSrc={selectedItem.imageUrl}
-                            layout="vertical"
-                        />
-                    </div>
-                </>
+                <StampCaptureRenderer
+                    hiddenHorizontalRef={hiddenHorizontalRef}
+                    hiddenVerticalRef={hiddenVerticalRef}
+                    isCapturing={isCapturing}
+                    headline={selectedItem.title || 'Untitled Memory'}
+                    location={selectedItem.metadata?.location?.toUpperCase() || 'UNKNOWN LOCATION'}
+                    handle="@memories"
+                    date={selectedItem.metadata?.date
+                        ? new Date(selectedItem.metadata.date).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                        }).toUpperCase()
+                        : new Date().toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                        }).toUpperCase()
+                    }
+                    imageSrc={selectedItem.imageUrl}
+                />
             )}
 
             <Button
-                onClick={handleShare}
+                onClick={handleShareClick}
                 disabled={isCapturing}
                 size="lg"
                 className="absolute h-12 bottom-10.5 z-50 left-7 bg-[#000DFF] hover:bg-[#000DFF]/90 text-white border border-[#2C2C2C] px-6 py-3 text-base font-medium flex items-center justify-center gap-2 disabled:opacity-50 transition-all shadow-lg"
@@ -581,9 +445,10 @@ const ListViewComponent: React.FC<ListViewProps> = ({ items, onImageClick }) => 
 
             {/* Copy & Share Popup */}
             <CopySharePopup
-                shareUrl={`${window.location.origin}/#/view/${selectedItem?.id.split("-tile")[0]}`}
+                shareUrl={selectedItem ? getMemoryShareUrl(selectedItem.id) : ''}
                 isOpen={isSharePopupOpen}
                 onClose={handleSharePopupClose}
+                isCapturing={isCapturing}
                 polaroidBlob={capturedBlob}
                 tweetText={getTweetText()}
                 onTwitterOpen={handleSharePopupClose}

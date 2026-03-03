@@ -132,11 +132,14 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Montserrat', sans-serif;
   }
 }
 
 /* ============================================= */
+
+body {
+  font-family: 'Montserrat', sans-serif;
+}
 
 * {
   scroll-behavior: smooth;

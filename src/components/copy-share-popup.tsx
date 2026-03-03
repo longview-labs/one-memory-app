@@ -7,6 +7,7 @@ import { useIsMobile } from '../hooks/use-mobile'
 interface CopySharePopupProps {
     isOpen: boolean
     onClose: () => void
+    isCapturing?: boolean
     polaroidBlob: Blob | null
     tweetText: string
     shareUrl: string
@@ -16,6 +17,7 @@ interface CopySharePopupProps {
 const CopySharePopup: React.FC<CopySharePopupProps> = ({
     isOpen,
     onClose,
+    isCapturing = false,
     polaroidBlob,
     tweetText,
     shareUrl,
@@ -188,14 +190,19 @@ const CopySharePopup: React.FC<CopySharePopupProps> = ({
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-[#000DFF] rounded-full flex items-center justify-center">
-                                {status === 'select' ? (
+                                {isCapturing ? (
+                                    <div className="flex flex-col items-center gap-3 text-white">
+                                        <div className="h-10 w-10 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                                        <span className="text-sm font-medium">Preparing...</span>
+                                    </div>
+                                ) : status === 'select' ? (
                                     <Copy className="w-5 h-5 text-white" />
                                 ) : (
                                     <Twitter className="w-5 h-5 text-white" />
                                 )}
                             </div>
                             <h2 className="text-white font-semibold text-lg">
-                                {status === 'select' ? 'Share Your Memory' : 'Share on X'}
+                                {isCapturing ? 'Preparing Share' : status === 'select' ? 'Share Your Memory' : 'Share on X'}
                             </h2>
                         </div>
                         <Button
@@ -210,7 +217,22 @@ const CopySharePopup: React.FC<CopySharePopupProps> = ({
 
                     {/* Status Content */}
                     <div className="text-center space-y-4">
-                        {status === 'select' && (
+                        {isCapturing && (
+                            <>
+                                <div className="w-16 h-16 mx-auto bg-white/10 rounded-full flex items-center justify-center">
+                                    <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                </div>
+                                <div>
+                                    <h3 className="text-white font-medium text-lg mb-2">
+                                        Preparing Memory
+                                    </h3>
+                                    <p className="text-white/70 text-sm">
+                                        Building your share image...
+                                    </p>
+                                </div>
+                            </>
+                        )}
+                        {!isCapturing && status === 'select' && (
                             <>
                                 <div>
                                     <h3 className="text-white font-medium text-lg mb-2">
@@ -266,7 +288,7 @@ const CopySharePopup: React.FC<CopySharePopupProps> = ({
                                 </div>
                             </>
                         )}
-                        {status === 'copying' && (
+                        {!isCapturing && status === 'copying' && (
                             <>
                                 <div className="w-16 h-16 mx-auto bg-white/10 rounded-full flex items-center justify-center">
                                     <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
@@ -282,7 +304,7 @@ const CopySharePopup: React.FC<CopySharePopupProps> = ({
                             </>
                         )}
 
-                        {status === 'copied' && (
+                        {!isCapturing && status === 'copied' && (
                             <>
                                 <div className="w-16 h-16 mx-auto bg-green-500/20 rounded-full flex items-center justify-center">
                                     <Check className="w-8 h-8 text-green-400" />
@@ -298,7 +320,7 @@ const CopySharePopup: React.FC<CopySharePopupProps> = ({
                             </>
                         )}
 
-                        {status === 'countdown' && (
+                        {!isCapturing && status === 'countdown' && (
                             <>
                                 <div className="w-16 h-16 mx-auto bg-[#000DFF]/20 rounded-full flex items-center justify-center">
                                     <span className="text-2xl font-bold text-[#000DFF]">
@@ -319,7 +341,7 @@ const CopySharePopup: React.FC<CopySharePopupProps> = ({
                             </>
                         )}
 
-                        {status === 'error' && (
+                        {!isCapturing && status === 'error' && (
                             <>
                                 <div className="w-16 h-16 mx-auto bg-red-500/20 rounded-full flex items-center justify-center">
                                     <X className="w-8 h-8 text-red-400" />
@@ -337,7 +359,7 @@ const CopySharePopup: React.FC<CopySharePopupProps> = ({
                     </div>
 
                     {/* Actions */}
-                    {status !== 'select' && (
+                    {!isCapturing && status !== 'select' && (
                         <div className="space-y-3">
                             {/* {status === 'countdown' && (
                                 <Button
@@ -382,7 +404,7 @@ const CopySharePopup: React.FC<CopySharePopupProps> = ({
                     )}
 
                     {/* Preview Text */}
-                    {status !== 'copying' && status !== 'select' && (
+                    {!isCapturing && status !== 'copying' && status !== 'select' && (
                         <div className="bg-white/5 border border-[#2C2C2C] rounded-lg p-3">
                             <p className="text-white/60 text-xs mb-1">Tweet Preview:</p>
                             <p className="text-white/80 text-sm">

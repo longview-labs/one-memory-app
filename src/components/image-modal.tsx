@@ -1,11 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import { X, Share2 } from 'lucide-react'
 import { Button } from './ui/button'
 import { useIsMobile } from '../hooks/use-mobile'
 import type { CanvasItem } from './infinite-canvas'
 import StampPreview from './stamp-preview'
 import CopySharePopup from './copy-share-popup'
-import { domToBlob } from 'modern-screenshot'
+import StampCaptureRenderer from './stamp-capture-renderer'
+import { useStampCaptureShare } from '../hooks/use-stamp-capture-share'
+import { getMemoryShareUrl, getMemoryTweetText } from '../utils/share'
 
 interface ImageModalProps {
     item: CanvasItem | null
@@ -17,11 +19,15 @@ const ImageModal: React.FC<ImageModalProps> = ({ item, isOpen, onClose }) => {
     const isMobile = useIsMobile()
     const [isAnimating, setIsAnimating] = useState(false)
     const [shouldRender, setShouldRender] = useState(false)
-    const [isSharePopupOpen, setIsSharePopupOpen] = useState(false)
-    const [isCapturing, setIsCapturing] = useState(false)
-    const [capturedBlob, setCapturedBlob] = useState<Blob | null>(null)
-    const hiddenHorizontalRef = useRef<HTMLDivElement>(null)
-    const hiddenVerticalRef = useRef<HTMLDivElement>(null)
+    const {
+        capturedBlob,
+        handleShare,
+        handleSharePopupClose,
+        hiddenHorizontalRef,
+        hiddenVerticalRef,
+        isCapturing,
+        isSharePopupOpen,
+    } = useStampCaptureShare({ captureLayout: 'horizontal' })
 
     // Handle animation states
     useEffect(() => {
@@ -63,124 +69,14 @@ const ImageModal: React.FC<ImageModalProps> = ({ item, isOpen, onClose }) => {
         }
     }, [isOpen, onClose])
 
-    const captureStampAsImage = async (): Promise<Blob | null> => {
-        // Capture vertical on mobile, horizontal on desktop
-        const elementRef = isMobile ? hiddenVerticalRef : hiddenHorizontalRef
-        if (!elementRef.current) return null
-
-        try {
-            setIsCapturing(true)
-
-            // Temporarily make the selected version visible
-            const element = elementRef.current
-            const originalVisibility = element.style.visibility
-            const originalOpacity = element.style.opacity
-
-            element.style.visibility = 'visible'
-            element.style.opacity = '1'
-            element.style.position = 'absolute'
-            element.style.left = '0'
-            element.style.top = '0'
-
-            // Wait for fonts to load
-            await document.fonts.ready
-
-            // Force font loading by checking specific fonts
-            await Promise.all([
-                document.fonts.load('400 16px "Instrument Serif"'),
-                document.fonts.load('300 16px "Montserrat"'),
-                document.fonts.load('400 16px "Montserrat"'),
-                document.fonts.load('500 16px "Montserrat"')
-            ]).catch(() => {/* ignore font loading errors */ })
-
-            // Ensure all images within the element are loaded
-            const images = element.querySelectorAll('img')
-            await Promise.all(
-                Array.from(images).map(img => {
-                    if (img.complete) return Promise.resolve()
-                    return new Promise((resolve) => {
-                        img.onload = () => resolve(null)
-                        img.onerror = () => resolve(null)
-                    })
-                })
-            )
-
-            // Extra wait for rendering and layout (longer for mobile)
-            await new Promise(resolve => setTimeout(resolve, 800))
-
-            // Capture with optimized settings
-            const blob = await domToBlob(element, {
-                scale: 3, // Higher quality (3x resolution for better text)
-                quality: 1, // Maximum quality
-                type: 'image/png',
-                features: {
-                    removeControlCharacter: false,
-                },
-                fetch: {
-                    requestInit: {
-                        mode: 'cors',
-                        cache: 'force-cache'
-                    }
-                },
-                debug: false,
-            })
-
-            // Hide it again
-            element.style.visibility = originalVisibility
-            element.style.opacity = originalOpacity
-            element.style.zIndex = ''
-
-            return blob
-        } catch (error) {
-            console.error('Error capturing stamp:', error)
-            // Make sure to hide it even if there's an error
-            const elementRef = isMobile ? hiddenVerticalRef : hiddenHorizontalRef
-            if (elementRef.current) {
-                const element = elementRef.current
-                element.style.visibility = 'hidden'
-                element.style.opacity = '0'
-                element.style.zIndex = ''
-            }
-            return null
-        } finally {
-            setIsCapturing(false)
-        }
-    }
-
-    const handleShare = async () => {
-        const blob = await captureStampAsImage()
-        if (blob) {
-            setCapturedBlob(blob)
-            // Copy image to clipboard immediately
-            try {
-                if (navigator.clipboard && navigator.clipboard.write) {
-                    await navigator.clipboard.write([
-                        new ClipboardItem({
-                            'image/png': blob
-                        })
-                    ])
-                    console.log('Image copied to clipboard')
-                }
-            } catch (error) {
-                console.error('Failed to copy image to clipboard:', error)
-            }
-        }
-        setIsSharePopupOpen(true)
-    }
-
-    const handleSharePopupClose = () => {
-        setIsSharePopupOpen(false)
-    }
-
     const getShareUrl = () => {
         if (!item) return ''
-        console.log(item.id.slice(0, 43))
-        return `${window.location.origin}/#/view/${item.id.slice(0, 43)}`
+        return getMemoryShareUrl(item.id)
     }
 
     const getTweetText = () => {
         if (!item) return ''
-        return `Check out this memory "${item.title || 'Memory'}" preserved forever! 🌟\n\nView it at: ${getShareUrl()}\n\n(paste the copied image here and remove this text)`
+        return getMemoryTweetText(item.title || 'Memory', getShareUrl())
     }
 
     if (!shouldRender || !item) return null
@@ -239,45 +135,21 @@ const ImageModal: React.FC<ImageModalProps> = ({ item, isOpen, onClose }) => {
                 />
             </div>
 
-            {/* Hidden versions for capturing */}
-            <div
-                ref={hiddenHorizontalRef}
-                className="absolute left-0 top-0 opacity-0 pointer-events-none -z-1"
-                style={{ visibility: 'hidden' }}
-            >
-                <StampPreview
-                    className="h-[50vh]"
-                    headline={item.title || 'Memory'}
-                    location={details.location?.toUpperCase() || 'UNKNOWN LOCATION'}
-                    handle="@memories"
-                    date={details.date.toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric'
-                    }).toUpperCase()}
-                    imageSrc={item.imageUrl}
-                    layout="horizontal"
-                />
-            </div>
-            <div
-                ref={hiddenVerticalRef}
-                className="absolute left-0 top-0 opacity-0 pointer-events-none -z-1"
-                style={{ visibility: 'hidden' }}
-            >
-                <StampPreview
-                    className="h-[50vh]"
-                    headline={item.title || 'Memory'}
-                    location={details.location?.toUpperCase() || 'UNKNOWN LOCATION'}
-                    handle="@memories"
-                    date={details.date.toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric'
-                    }).toUpperCase()}
-                    imageSrc={item.imageUrl}
-                    layout="vertical"
-                />
-            </div>
+            <StampCaptureRenderer
+                hiddenHorizontalRef={hiddenHorizontalRef}
+                hiddenVerticalRef={hiddenVerticalRef}
+                isCapturing={isCapturing}
+                className="h-[50vh]"
+                headline={item.title || 'Memory'}
+                location={details.location?.toUpperCase() || 'UNKNOWN LOCATION'}
+                handle="@memories"
+                date={details.date.toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                }).toUpperCase()}
+                imageSrc={item.imageUrl}
+            />
 
             {/* Share button */}
             <Button
@@ -295,6 +167,7 @@ const ImageModal: React.FC<ImageModalProps> = ({ item, isOpen, onClose }) => {
             <CopySharePopup
                 isOpen={isSharePopupOpen}
                 onClose={handleSharePopupClose}
+                isCapturing={isCapturing}
                 polaroidBlob={capturedBlob}
                 tweetText={getTweetText()}
                 shareUrl={getShareUrl()}

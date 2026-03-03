@@ -6,7 +6,9 @@ import { useIsMobile } from '../hooks/use-mobile'
 import CopySharePopup from './copy-share-popup'
 import { MemoriesLogo } from './landing-page'
 import StampPreview from './stamp-preview'
-import { domToBlob } from 'modern-screenshot'
+import StampCaptureRenderer from './stamp-capture-renderer'
+import { useStampCaptureShare } from '../hooks/use-stamp-capture-share'
+import { getMemoryShareUrl, getMemoryTweetText } from '../utils/share'
 
 interface MemoryData {
     id: string
@@ -25,13 +27,18 @@ const UploadedPage: React.FC = () => {
     const [memoryData, setMemoryData] = useState<MemoryData | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
-    const [isSharePopupOpen, setIsSharePopupOpen] = useState(false)
-    const [isCapturing, setIsCapturing] = useState(false)
-    const [capturedBlob, setCapturedBlob] = useState<Blob | null>(null)
     const [linkCopied, setLinkCopied] = useState(false)
     const stampPreviewRef = useRef<HTMLDivElement>(null)
-    const hiddenHorizontalRef = useRef<HTMLDivElement>(null)
-    const hiddenVerticalRef = useRef<HTMLDivElement>(null)
+    const {
+        capturedBlob,
+        captureStampAsImage,
+        handleShare: handleShareFromHook,
+        handleSharePopupClose,
+        hiddenHorizontalRef,
+        hiddenVerticalRef,
+        isCapturing,
+        isSharePopupOpen,
+    } = useStampCaptureShare({ captureLayout: isMobile ? 'vertical' : 'horizontal' })
 
     useEffect(() => {
         if (!transactionId) {
@@ -120,122 +127,13 @@ const UploadedPage: React.FC = () => {
         }
     }
 
-    const captureStampAsImage = async (): Promise<Blob | null> => {
-        // Capture vertical on mobile, horizontal on desktop
-        const elementRef = isMobile ? hiddenVerticalRef : hiddenHorizontalRef
-        if (!elementRef.current) return null
-
-        try {
-            setIsCapturing(true)
-
-            // Temporarily make the selected version visible
-            const element = elementRef.current
-            const originalVisibility = element.style.visibility
-            const originalOpacity = element.style.opacity
-
-            element.style.visibility = 'visible'
-            element.style.opacity = '1'
-            element.style.position = 'absolute'
-            element.style.left = '0'
-            element.style.top = '0'
-            element.style.zIndex = '9999'
-
-            // Wait for fonts to load
-            await document.fonts.ready
-
-            // Force font loading by checking specific fonts
-            await Promise.all([
-                document.fonts.load('400 16px "Instrument Serif"'),
-                document.fonts.load('300 16px "Montserrat"'),
-                document.fonts.load('400 16px "Montserrat"'),
-                document.fonts.load('500 16px "Montserrat"')
-            ]).catch(() => {/* ignore font loading errors */ })
-
-            // Ensure all images within the element are loaded
-            const images = element.querySelectorAll('img')
-            await Promise.all(
-                Array.from(images).map(img => {
-                    if (img.complete) return Promise.resolve()
-                    return new Promise((resolve) => {
-                        img.onload = () => resolve(null)
-                        img.onerror = () => resolve(null)
-                    })
-                })
-            )
-
-            // Extra wait for rendering and layout
-            await new Promise(resolve => setTimeout(resolve, 800))
-
-            // Capture the horizontal stamp preview element as a blob
-            const blob = await domToBlob(element, {
-                scale: 3, // Higher quality (3x resolution for better text)
-                quality: 1, // Maximum quality
-                type: 'image/png',
-                features: {
-                    // Ensure text is captured properly
-                    removeControlCharacter: false,
-                },
-                fetch: {
-                    // Use CORS for loading external resources
-                    requestInit: {
-                        mode: 'cors',
-                        cache: 'force-cache'
-                    }
-                },
-                // Debug options - set to true to see what's being captured
-                debug: false,
-            })
-
-            // Hide it again
-            element.style.visibility = originalVisibility
-            element.style.opacity = originalOpacity
-            element.style.zIndex = ''
-
-            return blob
-        } catch (error) {
-            console.error('Error capturing stamp:', error)
-            // Make sure to hide it even if there's an error
-            const elementRef = isMobile ? hiddenVerticalRef : hiddenHorizontalRef
-            if (elementRef.current) {
-                const element = elementRef.current
-                element.style.visibility = 'hidden'
-                element.style.opacity = '0'
-                element.style.zIndex = ''
-            }
-            return null
-        } finally {
-            setIsCapturing(false)
-        }
-    }
-
     const handleShare = async () => {
-        const blob = await captureStampAsImage()
-        if (blob) {
-            setCapturedBlob(blob)
-            // Copy image to clipboard immediately
-            try {
-                if (navigator.clipboard && navigator.clipboard.write) {
-                    await navigator.clipboard.write([
-                        new ClipboardItem({
-                            'image/png': blob
-                        })
-                    ])
-                    console.log('Image copied to clipboard')
-                }
-            } catch (error) {
-                console.error('Failed to copy image to clipboard:', error)
-            }
-        }
-        setIsSharePopupOpen(true)
-    }
-
-    const handleSharePopupClose = () => {
-        setIsSharePopupOpen(false)
+        await handleShareFromHook()
     }
 
     const getTweetText = () => {
         if (!memoryData) return ''
-        return `Check out this memory "${memoryData.title}" preserved forever! 🌟\n\nView it at: ${window.location.origin}/#/view/${memoryData.id}\n\n(paste the copied image here and remove this text)`
+        return getMemoryTweetText(memoryData.title, getMemoryShareUrl(memoryData.id))
     }
 
     const handleGallery = () => {
@@ -369,35 +267,16 @@ const UploadedPage: React.FC = () => {
                     />
                 </div>
 
-                {/* Hidden versions for capturing */}
-                <div
-                    ref={hiddenHorizontalRef}
-                    className="absolute left-0 top-0 opacity-0 pointer-events-none"
-                    style={{ visibility: 'hidden' }}
-                >
-                    <StampPreview
-                        headline={memoryData.title}
-                        location={memoryData.location}
-                        handle={memoryData.handle}
-                        date={new Date().toLocaleDateString()}
-                        imageSrc={memoryData.imageUrl}
-                        layout="horizontal"
-                    />
-                </div>
-                <div
-                    ref={hiddenVerticalRef}
-                    className="absolute left-0 top-0 opacity-0 pointer-events-none"
-                    style={{ visibility: 'hidden' }}
-                >
-                    <StampPreview
-                        headline={memoryData.title}
-                        location={memoryData.location}
-                        handle={memoryData.handle}
-                        date={new Date().toLocaleDateString()}
-                        imageSrc={memoryData.imageUrl}
-                        layout="vertical"
-                    />
-                </div>
+                <StampCaptureRenderer
+                    hiddenHorizontalRef={hiddenHorizontalRef}
+                    hiddenVerticalRef={hiddenVerticalRef}
+                    isCapturing={isCapturing}
+                    headline={memoryData.title}
+                    location={memoryData.location}
+                    handle={memoryData.handle}
+                    date={new Date().toLocaleDateString()}
+                    imageSrc={memoryData.imageUrl}
+                />
 
                 {/* Action Buttons */}
                 <div className="flex flex-col items-center gap-4 w-full max-w-md">
@@ -473,9 +352,10 @@ const UploadedPage: React.FC = () => {
 
             {/* Copy & Share Popup */}
             <CopySharePopup
-                shareUrl={`${window.location.origin}/#/view/${memoryData?.id}`}
+                shareUrl={memoryData ? getMemoryShareUrl(memoryData.id) : ''}
                 isOpen={isSharePopupOpen}
                 onClose={handleSharePopupClose}
+                isCapturing={isCapturing}
                 polaroidBlob={capturedBlob}
                 tweetText={getTweetText()}
                 onTwitterOpen={handleSharePopupClose}

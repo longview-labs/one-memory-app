@@ -157,7 +157,7 @@ export default function StampPreview({
     return (
         <div
             ref={containerRef}
-                className={cn(`relative text-black overflow-clip`,
+                className={cn(`select-none relative text-black overflow-clip`,
                 // !className?.includes('w-') && (noText ? 'w-[min(90vw,theme(maxWidth.2xl))]' : layout === 'horizontal' ? 'w-[min(90vw,theme(maxWidth.5xl))]' : 'w-[min(90vw,theme(maxWidth.lg))]'),
                 className
             )}
@@ -207,10 +207,11 @@ export default function StampPreview({
                                 // suppressContentEditableWarning
                                 onBlur={(e) => onHeadlineChange?.(e.currentTarget.textContent || '')}
                                 className={cn(
-                                    "font-light w-full leading-tight h-[3.65em] overflow-hidden cursor-text font-instrument text-left rounded focus:outline-2 outline-blue-400/50",
+                                    "font-light w-full leading-tight h-[3.65em] overflow-hidden cursor-text text-left rounded focus:outline-2 outline-blue-400/50",
                                     // size === 'sm' ? 'text-2xl md:text-4xl min-h-[2em] md:min-h-[2.5em]' : size === 'lg' ? 'text-5xl md:text-8xl min-h-[3.5em] md:min-h-[5em]' : ''
                                 )}
                                 style={{
+                                    fontFamily: "'Instrument Serif', serif",
                                     fontSize: layout === 'horizontal' 
                                         ? `calc(var(--stamp-scale) * 4.5em)`  // ~text-7xl equivalent
                                         : `calc(var(--stamp-scale) * 3.75em)`, // ~text-6xl equivalent

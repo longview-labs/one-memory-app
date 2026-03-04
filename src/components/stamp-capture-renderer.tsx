@@ -8,6 +8,7 @@ interface StampCaptureRendererProps {
     headline: string
     location: string
     handle: string
+    description?: string
     date: string
     imageSrc: string
     className?: string
@@ -20,6 +21,7 @@ const StampCaptureRenderer: React.FC<StampCaptureRendererProps> = ({
     headline,
     location,
     handle,
+    description,
     date,
     imageSrc,
     className,
@@ -47,6 +49,7 @@ const StampCaptureRenderer: React.FC<StampCaptureRendererProps> = ({
                     headline={headline}
                     location={location}
                     handle={handle}
+                    description={description}
                     date={date}
                     imageSrc={imageSrc}
                     layout="horizontal"
@@ -62,6 +65,7 @@ const StampCaptureRenderer: React.FC<StampCaptureRendererProps> = ({
                     headline={headline}
                     location={location}
                     handle={handle}
+                    description={description}
                     date={date}
                     imageSrc={imageSrc}
                     layout="vertical"

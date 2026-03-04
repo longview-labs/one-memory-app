@@ -84,7 +84,7 @@ const fetchMemories = async (cursor?: string): Promise<GraphQLResponse> => {
 }
 
 // Create a map to store real Arweave images
-const arweaveImageMap = new Map<string, { url: string; title: string; location?: string }>()
+const arweaveImageMap = new Map<string, { url: string; title: string; location?: string; description?: string; handle?: string; date?: string }>()
 
 // Compression options for image upload
 const compressionOptions = {
@@ -203,7 +203,10 @@ const GalleryPage: React.FC = () => {
                         arweaveImageMap.set(parsedMemory.id, {
                             url: parsedMemory.imageUrl,
                             title: parsedMemory.title,
-                            location: parsedMemory.location
+                            location: parsedMemory.location,
+                            description: parsedMemory.description,
+                            handle: parsedMemory.handle,
+                            date: parsedMemory.date
                         })
                         // Mark as validated
                         setValidatedImages(prev => {
@@ -259,7 +262,10 @@ const GalleryPage: React.FC = () => {
                         arweaveImageMap.set(transaction.id, {
                             url,
                             title: tags.Title || tags.Name || `Memory ${arweaveMemories.length + index + 1}`,
-                            location: tags.Location
+                            location: tags.Location,
+                            description: tags.Description,
+                            handle: tags.Handle,
+                            date: tags.Date
                         })
                         return transaction.id
                     }
@@ -401,8 +407,8 @@ const GalleryPage: React.FC = () => {
                 title: arweaveData.title,
                 metadata: {
                     location: arweaveData.location,
-                    date: new Date(),
-                    description: `A memory stored on Arweave`,
+                    date: arweaveData.date ? new Date(arweaveData.date) : new Date(),
+                    description: arweaveData.description,
                     tags: [],
                     camera: undefined
                 }
@@ -575,6 +581,10 @@ const GalleryPage: React.FC = () => {
                 { name: "Handle", value: uploadData.handle },
                 { name: "Visibility", value: uploadData.isPublic ? "Public" : "Not-Public" }
             ]
+
+            if (uploadData.description?.trim()) {
+                extraTags.push({ name: "Description", value: uploadData.description.trim() })
+            }
 
             const id = await uploadFileTurbo(finalFile, api, extraTags);
             console.log('id', id);

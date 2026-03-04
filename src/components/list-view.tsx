@@ -325,6 +325,7 @@ const ListViewComponent: React.FC<ListViewProps> = ({ items, onImageClick }) => 
                         headline={selectedItem.title || 'Untitled Memory'}
                         location={selectedItem.metadata?.location || 'Unknown location'}
                         handle="@memories"
+                        description={selectedItem.metadata?.description}
                         date={selectedItem.metadata?.date
                             ? new Date(selectedItem.metadata.date).toLocaleDateString('en-US', {
                                 year: 'numeric',
@@ -376,6 +377,7 @@ const ListViewComponent: React.FC<ListViewProps> = ({ items, onImageClick }) => 
                                     headline={selectedItem.title || 'Untitled Memory'}
                                     location={selectedItem.metadata?.location || 'Unknown location'}
                                     handle="@memories"
+                                    description={selectedItem.metadata?.description}
                                     date={selectedItem.metadata?.date
                                         ? new Date(selectedItem.metadata.date).toLocaleDateString('en-US', {
                                             year: 'numeric',
@@ -417,6 +419,7 @@ const ListViewComponent: React.FC<ListViewProps> = ({ items, onImageClick }) => 
                     headline={selectedItem.title || 'Untitled Memory'}
                     location={selectedItem.metadata?.location?.toUpperCase() || 'UNKNOWN LOCATION'}
                     handle="@memories"
+                    description={selectedItem.metadata?.description}
                     date={selectedItem.metadata?.date
                         ? new Date(selectedItem.metadata.date).toLocaleDateString('en-US', {
                             year: 'numeric',

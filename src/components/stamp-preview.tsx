@@ -7,12 +7,12 @@ import { Button } from "./ui/button";
 import { ImageUp, Upload, Loader2 } from "lucide-react";
 import { Input } from "./ui/input";
 import { useRef, useEffect, useState } from "react";
-import { el } from "date-fns/locale/el";
 
 interface StampPreviewProps {
     headline: string;
     location: string;
     handle: string;
+    description?: string;
     date: string;
     imageSrc: string;
     size?: 'sm' | 'md' | 'lg';
@@ -41,6 +41,7 @@ export default function StampPreview({
     headline,
     location,
     handle,
+    description,
     date,
     imageSrc,
     layout,
@@ -139,6 +140,9 @@ export default function StampPreview({
     if (!date) {
         date = new Date().toLocaleDateString()
     }
+    if (!description) {
+        description = ''
+    }
     if (!imageSrc) {
         imageSrc = ''
     }
@@ -235,7 +239,7 @@ export default function StampPreview({
                             >
                                 <svg 
                                     className="flex-shrink-0" 
-                                    style={{ width: `calc(var(--stamp-scale) * 0.75em)`, height: `calc(var(--stamp-scale) * 0.75em)` }}
+                                    style={{ width: `calc(var(--stamp-scale) * 1.5em)`, height: `calc(var(--stamp-scale) * 1.5em)` }}
                                     fill="currentColor" 
                                     viewBox="0 0 20 20" 
                                     onClick={() => document.getElementById("location-text")?.focus()}
@@ -264,6 +268,17 @@ export default function StampPreview({
                                 >{handle}</span>
                             </div>
                         </div>
+                        {description.trim() && (
+                            <p
+                                className='font-light leading-snug break-words'
+                                style={{
+                                    fontSize: `calc(var(--stamp-scale) * 0.75em)`,
+                                    marginTop: `calc(var(--stamp-scale) * 0.35em)`,
+                                }}
+                            >
+                                {description}
+                            </p>
+                        )}
                     </div>
 
 

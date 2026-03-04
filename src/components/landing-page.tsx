@@ -116,6 +116,10 @@ const LandingPage: React.FC = () => {
                 { name: "Visibility", value: uploadData.isPublic ? "Public" : "Not-Public" }
             ]
 
+            if (uploadData.description?.trim()) {
+                extraTags.push({ name: "Description", value: uploadData.description.trim() })
+            }
+
             // add Date tag if available
             if (uploadData.datetime) {
                 extraTags.push({ name: "Date", value: uploadData.datetime })

@@ -95,6 +95,7 @@ const ImageModal: React.FC<ImageModalProps> = ({ item, isOpen, onClose }) => {
     const details = {
         date: item.metadata?.date || new Date(),
         location: item.metadata?.location || 'Unknown Location',
+        description: item.metadata?.description || '',
     }
 
     const handleBackdropClick = (e: React.MouseEvent) => {
@@ -134,6 +135,7 @@ const ImageModal: React.FC<ImageModalProps> = ({ item, isOpen, onClose }) => {
                     headline={item.title || 'Memory'}
                     location={details.location?.toUpperCase() || 'UNKNOWN LOCATION'}
                     handle="@memories"
+                    description={details.description}
                     date={details.date.toLocaleDateString('en-US', {
                         month: 'short',
                         day: 'numeric',
@@ -200,6 +202,7 @@ const ImageModal: React.FC<ImageModalProps> = ({ item, isOpen, onClose }) => {
                 headline={item.title || 'Memory'}
                 location={details.location?.toUpperCase() || 'UNKNOWN LOCATION'}
                 handle="@memories"
+                description={details.description}
                 date={details.date.toLocaleDateString('en-US', {
                     month: 'short',
                     day: 'numeric',

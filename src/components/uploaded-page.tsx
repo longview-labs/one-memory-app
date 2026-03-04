@@ -15,6 +15,7 @@ interface MemoryData {
     title: string
     location: string
     handle: string
+    description?: string
     imageUrl: string
     isPublic: boolean
 }
@@ -102,6 +103,7 @@ const UploadedPage: React.FC = () => {
                 title: tags.Title || 'Untitled Memory',
                 location: tags.Location || '',
                 handle: tags.Handle || '',
+                description: tags.Description || '',
                 imageUrl: `https://arweave.net/${transaction.id}`,
                 isPublic: tags.Visibility === 'Public'
             }
@@ -112,6 +114,7 @@ const UploadedPage: React.FC = () => {
                 title: tags.Title || 'Untitled Memory',
                 location: tags.Location || '',
                 handle: tags.Handle || '',
+                description: tags.Description || '',
                 imageUrl: `https://arweave.net/${transaction.id}`,
                 date: new Date().toISOString(),
                 txid: transaction.id
@@ -261,6 +264,7 @@ const UploadedPage: React.FC = () => {
                         headline={memoryData.title}
                         location={memoryData.location}
                         handle={memoryData.handle}
+                        description={memoryData.description}
                         date={new Date().toLocaleDateString()}
                         imageSrc={memoryData.imageUrl}
                         layout={isMobile ? "vertical" : "horizontal"}
@@ -274,6 +278,7 @@ const UploadedPage: React.FC = () => {
                     headline={memoryData.title}
                     location={memoryData.location}
                     handle={memoryData.handle}
+                    description={memoryData.description}
                     date={new Date().toLocaleDateString()}
                     imageSrc={memoryData.imageUrl}
                 />

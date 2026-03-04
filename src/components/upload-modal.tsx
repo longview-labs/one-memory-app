@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react'
 import { toast } from 'sonner'
-import { ArrowRight, Upload, Image as ImageIcon, ArrowLeft, Check, Loader2, MoveLeft, Compass, X, MapPin } from 'lucide-react'
+import { ArrowRight, Upload, Image as ImageIcon, ArrowLeft, Check, Loader2, MoveLeft, Compass, X, MapPin, ChevronDown, ChevronUp } from 'lucide-react'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { useIsMobile } from '../hooks/use-mobile'
@@ -32,6 +32,8 @@ import {
     SheetDescription,
 } from './ui/sheet'
 import { Link } from 'react-router'
+import { Textarea } from './ui/textarea'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible'
 
 interface UploadModalProps {
     isOpen: boolean
@@ -45,6 +47,7 @@ export interface UploadData {
     title: string
     location: string
     handle: string
+    description?: string
     isPublic: boolean
     datetime?: string
 }
@@ -70,8 +73,11 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload, in
     const [previewUrl, setPreviewUrl] = useState<string | null>(null)
     const [title, setTitle] = useState('')
     const MAX_TITLE_LENGTH = 30
+    const MAX_DESCRIPTION_LENGTH = 120
     const [location, setLocation] = useState('')
     const [handle, setHandle] = useState('')
+    const [description, setDescription] = useState('')
+    const [isDescriptionOpen, setIsDescriptionOpen] = useState(false)
     const [datetime, setDatetime] = useState('')
     const [isPublic, setIsPublic] = useState(true)
     const [isProcessing, setIsProcessing] = useState(false)
@@ -452,6 +458,10 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload, in
         setTitle((v || '').slice(0, MAX_TITLE_LENGTH))
     }
 
+    const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setDescription((e.target.value || '').slice(0, MAX_DESCRIPTION_LENGTH))
+    }
+
     const handleReselect = () => {
         fileInputRef.current?.click()
     }
@@ -492,6 +502,11 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload, in
             return
         }
 
+        if (description.length > MAX_DESCRIPTION_LENGTH) {
+            setUploadError(`Description must be ${MAX_DESCRIPTION_LENGTH} characters or less`)
+            return
+        }
+
 
         setIsUploading(true)
         setUploadError(null) // Clear any previous errors
@@ -502,6 +517,7 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload, in
                 title: title.trim(),
                 location: location.trim(),
                 handle: handle.trim(),
+                description: description.trim() || undefined,
                 isPublic: isPublic,
                 datetime: datetime || undefined
             }
@@ -522,6 +538,8 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload, in
         setTitle('')
         setLocation('')
         setHandle('')
+        setDescription('')
+        setIsDescriptionOpen(false)
         setDatetime('')
         setIsUploading(false)
         setMobileStep(1)
@@ -549,7 +567,7 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload, in
         setMobileStep(1)
     }
 
-    const submitDisabled = !selectedFile || title.trim().length === 0 || title.trim().length > MAX_TITLE_LENGTH || !handle.trim() || !location.trim() || isUploading || !!blockedReason
+    const submitDisabled = !selectedFile || title.trim().length === 0 || title.trim().length > MAX_TITLE_LENGTH || description.length > MAX_DESCRIPTION_LENGTH || !handle.trim() || !location.trim() || isUploading || !!blockedReason
 
     if (!isOpen) return null
 
@@ -597,6 +615,7 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload, in
                         headline={title}
                         location={location}
                         handle={handle}
+                        description={description}
                         noText
                         date={datetime ? new Date(datetime).toLocaleDateString() : new Date().toLocaleDateString()}
                         imageSrc={previewUrl}
@@ -681,6 +700,35 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload, in
                             </svg>
                         </div> */}
                     </div>
+                    <Collapsible open={isDescriptionOpen} onOpenChange={setIsDescriptionOpen}>
+                        <div className='flex flex-col gap-2 rounded-lg border border-gray-300 bg-[#F5F5F5] p-3'>
+                            <CollapsibleTrigger asChild>
+                                <button
+                                    type='button'
+                                    className='flex w-full items-center justify-between text-left text-[#2C2C2C]'
+                                    disabled={isUploading}
+                                >
+                                    <span>Add Description (Optional)</span>
+                                    {isDescriptionOpen ? <ChevronUp className='h-5 w-5' /> : <ChevronDown className='h-5 w-5' />}
+                                </button>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent>
+                                <div className='mt-2 flex flex-col gap-1'>
+                                    <Textarea
+                                        value={description}
+                                        onChange={handleDescriptionChange}
+                                        maxLength={MAX_DESCRIPTION_LENGTH}
+                                        disabled={isUploading}
+                                        placeholder='Add a short description...'
+                                        className='min-h-20 resize-none border-gray-300 bg-white text-[#2C2C2C] placeholder:text-[#2C2C2C]/60 focus-visible:ring-0 focus-visible:ring-offset-0'
+                                    />
+                                    <div className='text-right text-xs text-[#B3B3B3]'>
+                                        {description.length}/{MAX_DESCRIPTION_LENGTH}
+                                    </div>
+                                </div>
+                            </CollapsibleContent>
+                        </div>
+                    </Collapsible>
                     {/* <div className='flex flex-col gap-2'>
                         <div className={cn('font-extralight font-instrument', isMobile ? 'text-xl' : 'text-3xl')}>
                             Twitter handle <span className='text-red-500'>*</span>
@@ -923,6 +971,7 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload, in
                     location={location}
                     // size="lg"
                     handle={handle}
+                    description={description}
                     date={datetime ? new Date(datetime).toLocaleDateString() : new Date().toLocaleDateString()}
                     imageSrc={previewUrl}
                     layout={orientation}

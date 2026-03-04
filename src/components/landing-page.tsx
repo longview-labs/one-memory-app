@@ -358,7 +358,7 @@ const LandingPage: React.FC = () => {
                             <h2 className="text-white font-instrument text-5xl md:text-8xl md:leading-[90px]">
                                 Your memory <br />can last forever
                             </h2>
-                            <p className="font-montserrat text-white text-xl leading-relaxed">
+                            <p className="font-montserrat text-white text-sm md:text-xl leading-relaxed">
                                 Save your favourite photo memory, forever<br /> Seriously, no strings attached, own your memory with Arweave,<br /> upload now.
                             </p>
                         </div>

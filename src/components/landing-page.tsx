@@ -443,9 +443,9 @@ const LandingPage: React.FC = () => {
             />
 
             <div className='absolute bottom-2 left-2 z-20 flex items-center text-muted-foreground/80'>
-                <Link to="/tnc" className='px-1'>Terms & Conditions</Link>
-                <span className='px-1'>•</span>
                 <Link to="/how-it-works" className='px-1'>How it works</Link>
+                <span className='px-1'>•</span>
+                <Link to="/tnc" className='px-1'>Terms & Conditions</Link>
             </div>
         </div>
     )

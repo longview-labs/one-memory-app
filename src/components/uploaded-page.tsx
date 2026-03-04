@@ -285,7 +285,7 @@ const UploadedPage: React.FC = () => {
                         disabled={isCapturing}
                         className="w-full bg-[#000DFF] text-white border border-[#2C2C2C] px-6 py-3 text-base font-medium rounded-md flex items-center justify-center gap-2 disabled:opacity-50"
                     >
-                        {isCapturing ? 'Capturing...' : 'Share'}
+                        {isCapturing ? 'Preparing...' : 'Share'}
                     </Button>
 
                     {/* Download Image Button */}

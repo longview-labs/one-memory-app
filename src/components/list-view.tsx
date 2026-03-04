@@ -440,7 +440,7 @@ const ListViewComponent: React.FC<ListViewProps> = ({ items, onImageClick }) => 
                 className="absolute h-12 bottom-10.5 z-50 left-7 bg-[#000DFF] hover:bg-[#000DFF]/90 text-white border border-[#2C2C2C] px-6 py-3 text-base font-medium flex items-center justify-center gap-2 disabled:opacity-50 transition-all shadow-lg"
             >
                 <Share2 className="w-4 h-4" />
-                {isCapturing ? 'Capturing...' : 'Share'}
+                {isCapturing ? 'Preparing...' : 'Share'}
             </Button>
 
             {/* Copy & Share Popup */}

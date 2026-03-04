@@ -69,6 +69,7 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload, in
     const [selectedFile, setSelectedFile] = useState<File | null>(null)
     const [previewUrl, setPreviewUrl] = useState<string | null>(null)
     const [title, setTitle] = useState('')
+    const MAX_TITLE_LENGTH = 30
     const [location, setLocation] = useState('')
     const [handle, setHandle] = useState('')
     const [datetime, setDatetime] = useState('')
@@ -442,6 +443,15 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload, in
         handleNewFile(file)
     }
 
+    const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const v = e.target.value || ''
+        setTitle(v.slice(0, MAX_TITLE_LENGTH))
+    }
+
+    const handleSetTitle = (v: string) => {
+        setTitle((v || '').slice(0, MAX_TITLE_LENGTH))
+    }
+
     const handleReselect = () => {
         fileInputRef.current?.click()
     }
@@ -530,7 +540,7 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload, in
     }
 
     const handleNextStep = () => {
-        if (selectedFile && title.trim() && handle.trim() && location.trim()) {
+        if (selectedFile && title.trim() && title.trim().length <= MAX_TITLE_LENGTH && handle.trim() && location.trim()) {
             setMobileStep(2)
         }
     }
@@ -539,7 +549,7 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload, in
         setMobileStep(1)
     }
 
-    const submitDisabled = !selectedFile || !title.trim() || !handle.trim() || !location.trim() || isUploading || !!blockedReason
+    const submitDisabled = !selectedFile || title.trim().length === 0 || title.trim().length > MAX_TITLE_LENGTH || !handle.trim() || !location.trim() || isUploading || !!blockedReason
 
     if (!isOpen) return null
 
@@ -593,7 +603,7 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload, in
                         layout={orientation}
                         onReselect={handleReselect}
                         isProcessing={isProcessing}
-                        onHeadlineChange={setTitle}
+                        onHeadlineChange={handleSetTitle}
                         onLocationChange={setLocation}
                         onHandleChange={setHandle}
                     />}
@@ -602,14 +612,20 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload, in
                         {/* <div className={cn('font-extralight font-instrument', isMobile ? 'text-xl' : 'text-3xl')}>
                             Title your memory
                         </div> */}
-                        <Input
-                            placeholder='Name this memory'
-                            className={cn('rounded-none font-montserrat border-0 placeholder:font-light border-b border-black/20 focus-visible:ring-0 focus-visible:ring-offset-0 p-1 h-7 !text-lg', isMobile ? 'text-sm' : '')}
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
-                            required
-                            disabled={isUploading}
-                        />
+                        <div className='relative'>
+                            <Input
+                                placeholder='Name this memory'
+                                className={cn('rounded-none font-montserrat border-0 placeholder:font-light border-b border-black/20 focus-visible:ring-0 focus-visible:ring-offset-0 p-1 h-7 !text-lg', isMobile ? 'text-sm' : '')}
+                                value={title}
+                                onChange={(e) => handleTitleChange(e)}
+                                required
+                                disabled={isUploading}
+                                maxLength={MAX_TITLE_LENGTH}
+                            />
+                            <div className='absolute right-0 top-0 text-xs text-muted-foreground/70 mt-1 mr-1'>
+                                {title.length}/{MAX_TITLE_LENGTH}
+                            </div>
+                        </div>
                     </div>
                     <div className={cn('grid gap-2 md:grid-cols-2')}>
                         <div className='relative w-full'>
@@ -913,7 +929,7 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload, in
                     className={cn("scale-90", orientation === 'vertical' ? 'h-[80vh]' : 'w-[50vw]')}
                     onReselect={handleReselect}
                     isProcessing={isProcessing}
-                    onHeadlineChange={setTitle}
+                    onHeadlineChange={handleSetTitle}
                     onLocationChange={setLocation}
                     onHandleChange={setHandle}
                 />

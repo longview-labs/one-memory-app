@@ -110,8 +110,7 @@ export default function StampPreview({
         };
 
         // Initial calculation after a short delay to ensure styles are applied
-        // setTimeout(calculateScaleAndOffset, 100);
-        calculateScaleAndOffset()
+        setTimeout(calculateScaleAndOffset, 100);
 
         // Use ResizeObserver to detect size changes
         // const observer = new ResizeObserver(() => {

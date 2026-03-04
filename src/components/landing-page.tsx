@@ -327,10 +327,10 @@ const LandingPage: React.FC = () => {
                     <div className="relative space-y-10 self-center pt-6 md:pt-0 lg:-top-10">
                         <div className="space-y-6">
                             <h2 className="text-white font-instrument text-5xl md:text-8xl md:leading-[90px]">
-                                Your memories <br />can last forever
+                                Your memory <br />can last forever
                             </h2>
                             <p className="font-montserrat text-white text-xl leading-relaxed">
-                                Save your favourite photo memory, forever<br /> Seriously, no strings attached, own your memories with Arweave,<br /> upload now.
+                                Save your favourite photo memory, forever<br /> Seriously, no strings attached, own your memory with Arweave,<br /> upload now.
                             </p>
                         </div>
 
@@ -342,7 +342,7 @@ const LandingPage: React.FC = () => {
                                 onClick={handleUploadClick}
                             >
                                 <Upload className="w-5 h-5" />
-                                Preserve your memories
+                                Preserve your memory
                             </Button>
                             <Button
                                 variant="link"

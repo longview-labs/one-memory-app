@@ -29,43 +29,9 @@ const HowItWorks: React.FC = () => {
 
         <div className="space-y-8 font-montserrat text-white/80 leading-relaxed">
           <section>
-            <h2 className="text-2xl font-semibold text-white mb-4">1. Choose a photo</h2>
-            <p>
-              Click <strong>Preserve your memories</strong> on the home page and pick an image, or drag and drop an image directly onto the page.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-semibold text-white mb-4">2. Add memory details</h2>
-            <p>
-              Fill in your memory title, location, handle, and date. These details are stored as metadata alongside your image.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-semibold text-white mb-4">3. Upload to Arweave</h2>
+            <h2 className="text-2xl font-semibold text-white mb-4">Arweave</h2>
             <p>
               The app uploads your image to Arweave so your memory can live permanently on the permaweb.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-semibold text-white mb-4">4. View and share</h2>
-            <p>
-              After upload, you are taken to your memory page where you can view it and share the link.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-semibold text-white mb-4">5. Explore the gallery</h2>
-            <p>
-              Visit the gallery to discover public memories shared by others.
-            </p>
-          </section>
-
-          <section className="pt-8 border-t border-white/10">
-            <p className="text-sm text-white/60">
-              Last updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
             </p>
           </section>
         </div>

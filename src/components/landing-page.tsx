@@ -386,7 +386,7 @@ const LandingPage: React.FC = () => {
                                         <StampPreview
                                             headline="Your first memory"
                                             location="ANYWHERE, EARTH"
-                                            handle="@YOU"
+                                            handle="YOU"
                                             date="TODAY"
                                             imageSrc=""
                                             layout="vertical"
@@ -397,7 +397,7 @@ const LandingPage: React.FC = () => {
                                         <StampPreview
                                             headline="Your first memory"
                                             location="ANYWHERE, EARTH"
-                                            handle="@YOU"
+                                            handle="YOU"
                                             date="TODAY"
                                             imageSrc=""
                                             layout="vertical"
@@ -442,8 +442,10 @@ const LandingPage: React.FC = () => {
                 initialFile={initialFile}
             />
 
-            <div className='absolute bottom-2 left-2 z-20'>
-                <Link to="/tnc" className='text-muted-foreground/80 px-1'>Terms & Conditions</Link>
+            <div className='absolute bottom-2 left-2 z-20 flex items-center text-muted-foreground/80'>
+                <Link to="/tnc" className='px-1'>Terms & Conditions</Link>
+                <span className='px-1'>•</span>
+                <Link to="/how-it-works" className='px-1'>How it works</Link>
             </div>
         </div>
     )

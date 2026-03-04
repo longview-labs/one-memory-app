@@ -12,6 +12,7 @@ import App from './App'
 import GalleryPage from './components/gallery-page'
 import UploadedPage from './components/uploaded-page'
 import TermsAndConditions from './components/tnc'
+import HowItWorks from './components/how-it-works'
 
 import { QuickWallet } from "quick-wallet"
 import QuickWalletStrategy from '@vela-ventures/quick-wallet-strategy'
@@ -54,6 +55,7 @@ function Main() {
           <Route path='gallery' element={<GalleryPage />} />
           <Route path='view/:transactionId' element={<UploadedPage />} />
           <Route path='tnc' element={<TermsAndConditions />} />
+          <Route path='how-it-works' element={<HowItWorks />} />
         </Routes>
       </HashRouter>
     </ThemeProvider>

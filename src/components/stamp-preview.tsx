@@ -192,7 +192,7 @@ export default function StampPreview({
                     )}
                     style={{
                         // Constrain width to effective visible area and center the text section
-                        // width: effectiveWidth ? `${effectiveWidth}px` : '100%',
+                        width: effectiveWidth ? `${effectiveWidth}px` : '100%',
                         // margin: effectiveWidth ? '0 auto' : undefined,
                         padding: `max(calc(var(--stamp-scale) * 2em), 5%) max(calc(var(--stamp-scale) * 2.5em), 5%)`,
                     }}

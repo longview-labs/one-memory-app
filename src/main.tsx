@@ -85,7 +85,7 @@ createRoot(document.getElementById('root')!).render(
     apiKey={"phc_mYWx4nNJdTTIjuT105FmzMjKeDYDakFzgGQLhNrhJTe"}
     options={{
       api_host: "https://us.i.posthog.com",
-      defaults: '2026-01-30',
+      defaults: "2025-11-30",
       capture_exceptions: true, // This enables capturing exceptions using Error Tracking, set to false if you don't want this
       debug: import.meta.env.MODE === "development",
     }}

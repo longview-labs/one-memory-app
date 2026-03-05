@@ -30,9 +30,26 @@ const HowItWorks: React.FC = () => {
         <div className="space-y-8 font-montserrat text-white/80 leading-relaxed">
           <section>
             <h2 className="text-2xl font-semibold text-white mb-4">Arweave</h2>
-            <p>
-              The app uploads your image to Arweave so your memory can live permanently on the permaweb.
-            </p>
+            <div>
+              <p>Memories uploaded to OneMemory are uploaded to a protocol called Arweave.</p>
+
+              <p>
+                Arweave is a decentralized storage network which instead of using a rental model,
+                takes a single, larger upfront payment which covers 20+ replicas for an estimated
+                200 years of storage. These costs are subsidized by OneMemory, meaning the end user
+                pays nothing.
+              </p>
+
+              <p>
+                The data is served directly to a user's browser, providing an experience like most
+                traditional cloud providers.
+              </p>
+
+              <p>
+                Once uploaded, data on Arweave (and therefore OneMemory) is immutable. It cannot
+                arbitrarily be removed. Keep this in mind when you upload your memory!
+              </p>
+            </div>
           </section>
         </div>
 

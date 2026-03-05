@@ -24,8 +24,6 @@ const MEMORIES_QUERY = `query GetMemories($after: String) {
     transactions(
         tags: [
             {name: "App-Name", values: ["Memories-App"]}
-            {name: "App-Version", values: ["1.0.3"]}
-            {name: "App-Env", values: ["${import.meta.env.DEV ? "Dev" : "Prod"}"]}
             {name: "Visibility", values: ["Public"]}
         ],
         after: $after

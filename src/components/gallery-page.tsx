@@ -404,7 +404,7 @@ const GalleryPage: React.FC = () => {
             const y = row * (size + spacing)
 
             return {
-                id: `${transactionId}-${index}`, // Add index to ensure unique IDs for duplicates
+                id: transactionId,
                 x,
                 y,
                 width: size,

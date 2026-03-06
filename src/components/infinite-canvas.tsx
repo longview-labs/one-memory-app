@@ -18,6 +18,7 @@ export interface CanvasItem {
         tags?: string[]
         description?: string
     }
+    arweaveTransactionId?: string
 }
 
 interface InfiniteCanvasProps {
@@ -556,12 +557,13 @@ export const InfiniteCanvas = forwardRef<InfiniteCanvasRef, InfiniteCanvasProps>
                 const tileOffsetY = tileRow * gridHeight
 
                 // Add all items from the original grid to this tile position
-                items.forEach(item => {
+                items.forEach((item, index) => {
                     // Items already have correct positioning and sizing from gallery-page
                     // No scaling needed - just offset for infinite grid tiles
                     const virtualItem: CanvasItem = {
                         ...item,
-                        id: `${item.id}-tile-${tileCol}-${tileRow}`,
+                        id: `${item.id}-${index}-tile-${tileCol}-${tileRow}`,
+                        arweaveTransactionId: item.id,
                         x: item.x + tileOffsetX,
                         y: item.y + tileOffsetY,
                         // Keep original width/height from gallery-page

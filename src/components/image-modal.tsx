@@ -85,7 +85,7 @@ const ImageModal: React.FC<ImageModalProps> = ({ item, isOpen, onClose }) => {
 
     const getShareUrl = () => {
         if (!item) return ''
-        return getMemoryShareUrl(item.id)
+        return getMemoryShareUrl(item.arweaveTransactionId || item.id)
     }
 
     const getTweetText = () => {

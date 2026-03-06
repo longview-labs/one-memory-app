@@ -1,12 +1,15 @@
 import { fetchGraphqlWithGatewayFallback } from '@/lib/arweave-gateway'
+import { buildMemoryFetchTagFilters } from './memory-tags'
+
+const MEMORY_FETCH_TAGS = buildMemoryFetchTagFilters()
+const MEMORY_FETCH_TAGS_GQL = MEMORY_FETCH_TAGS
+    .map((tag) => `{name: "${tag.name}", values: [${tag.values.map((value) => `"${value}"`).join(', ')}]}`)
+    .join('\n            ')
 
 const MEMORIES_QUERY = `query GetMemories($after: String) {
     transactions(
         tags: [
-            {name: "App-Name", values: ["Memories-App"]}
-            {name: "App-Version", values: ["1.0.3"]}
-            {name: "App-Env", values: ["Prod"]}
-            {name: "Visibility", values: ["Public"]}
+            ${MEMORY_FETCH_TAGS_GQL}
         ],
         after: $after
         first: 50

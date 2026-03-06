@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils'
 import { trackUploadFailed, trackUploadSucceeded } from '@/lib/analytics'
 import { buildArweaveTransactionUrl, fetchWithGatewayFallback, isLikelyImageContentType, validateArweaveImageWithFallback } from '@/lib/arweave-gateway'
 import { fetchMemories, type ArweaveTransaction } from '@/utils/memories'
+import { buildMemoryUploadTags } from '@/utils/memory-tags'
 
 // Create a map to store real Arweave images
 const arweaveImageMap = new Map<string, { url: string; title: string; location?: string; description?: string; handle?: string; date?: string }>()
@@ -45,14 +46,7 @@ async function uploadFileTurbo(file: File, api: any, tags: { name: string, value
         fileStreamFactory: () => file.stream(),
         fileSizeFactory: () => file.size,
         dataItemOpts: {
-            tags: [
-                { name: "App-Name", value: "Memories-App" },
-                { name: "App-Version", value: "1.0.3" },
-                { name: "App-Env", value: import.meta.env.DEV ? "Dev" : "Prod" },
-                { name: "Content-Type", value: file.type ?? "application/octet-stream" },
-                { name: "Name", value: file.name ?? "unknown" },
-                ...tags
-            ],
+            tags: buildMemoryUploadTags(file, tags),
         }
     })
     return res.id;

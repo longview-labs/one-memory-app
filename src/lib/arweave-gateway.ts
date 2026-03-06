@@ -5,9 +5,11 @@ const ARWEAVE_GATEWAYS = [
 ] as const
 
 const ARWEAVE_GRAPHQL_GATEWAYS = [
-    'https://ardrive.net',
     'https://arweave.net',
     'https://arweave-search.goldsky.com',
+    'https://ardrive.net',
+    'https://ar.io',
+    'https://turbo-gateway.com',
 ] as const
 
 type Gateway = (typeof ARWEAVE_GATEWAYS)[number]

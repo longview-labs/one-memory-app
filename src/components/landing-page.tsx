@@ -13,6 +13,7 @@ import { QuickWallet } from 'quick-wallet'
 import { loadNSFWModel } from '@/lib/nsfw'
 import { trackUploadFailed, trackUploadSucceeded } from '@/lib/analytics'
 import { validateArweaveImageWithFallback } from '@/lib/arweave-gateway'
+import { buildMemoryUploadTags } from '@/utils/memory-tags'
 
 interface MemoryData {
     id: string
@@ -79,14 +80,7 @@ export async function uploadFileTurbo(file: File, api: any, tags: { name: string
         fileStreamFactory: () => file.stream(),
         fileSizeFactory: () => file.size,
         dataItemOpts: {
-            tags: [
-                { name: "App-Name", value: "Memories-App" },
-                { name: "App-Version", value: "1.0.3" },
-                { name: "App-Env", value: import.meta.env.DEV ? "Dev" : "Prod" },
-                { name: "Content-Type", value: file.type ?? "application/octet-stream" },
-                { name: "Name", value: file.name ?? "unknown" },
-                ...tags
-            ],
+            tags: buildMemoryUploadTags(file, tags),
         }
     })
     return res.id;

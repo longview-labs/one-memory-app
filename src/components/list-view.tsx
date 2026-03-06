@@ -303,7 +303,7 @@ const ListViewComponent: React.FC<ListViewProps> = ({
                         // className={cn("", isMobile ? 'scale-40 -translate-y-1/4' : "scale-90 -translate-y-10")}
                         headline={selectedItem.title || 'Untitled Memory'}
                         location={selectedItem.metadata?.location || 'Unknown location'}
-                        handle="@memories"
+                        handle={selectedItem.handle}
                         description={selectedItem.metadata?.description}
                         date={selectedItem.metadata?.date
                             ? new Date(selectedItem.metadata.date).toLocaleDateString('en-US', {
@@ -355,7 +355,7 @@ const ListViewComponent: React.FC<ListViewProps> = ({
                                 <StampPreview
                                     headline={selectedItem.title || 'Untitled Memory'}
                                     location={selectedItem.metadata?.location || 'Unknown location'}
-                                    handle="@memories"
+                                    handle={selectedItem.handle}
                                     description={selectedItem.metadata?.description}
                                     date={selectedItem.metadata?.date
                                         ? new Date(selectedItem.metadata.date).toLocaleDateString('en-US', {
@@ -397,7 +397,7 @@ const ListViewComponent: React.FC<ListViewProps> = ({
                     isCapturing={isCapturing}
                     headline={selectedItem.title || 'Untitled Memory'}
                     location={selectedItem.metadata?.location?.toUpperCase() || 'UNKNOWN LOCATION'}
-                    handle="@memories"
+                    handle={selectedItem.handle}
                     description={selectedItem.metadata?.description}
                     date={selectedItem.metadata?.date
                         ? new Date(selectedItem.metadata.date).toLocaleDateString('en-US', {

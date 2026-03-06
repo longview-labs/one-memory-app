@@ -89,7 +89,7 @@ const CardView: React.FC<CardViewProps> = ({ items, onImageClick }) => {
                                         <StampPreview
                                             headline={item.title || 'Your Memory'}
                                             location={item.metadata?.location || 'EARTH'}
-                                            handle="@memories"
+                                            handle={item.handle}
                                             description={item.metadata?.description}
                                             date={formatDate(item.metadata?.date)}
                                             imageSrc={item.imageUrl}

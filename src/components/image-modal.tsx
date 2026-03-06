@@ -138,7 +138,7 @@ const ImageModal: React.FC<ImageModalProps> = ({ item, isOpen, onClose }) => {
                 <StampPreview
                     headline={item.title || 'Memory'}
                     location={details.location?.toUpperCase() || 'UNKNOWN LOCATION'}
-                    handle="@memories"
+                    handle={item.handle}
                     description={details.description}
                     date={details.date.toLocaleDateString('en-US', {
                         month: 'short',
@@ -205,7 +205,7 @@ const ImageModal: React.FC<ImageModalProps> = ({ item, isOpen, onClose }) => {
                 className={orientation === 'vertical' ? 'h-[50vh]' : 'w-[80vw] max-w-[950px]'}
                 headline={item.title || 'Memory'}
                 location={details.location?.toUpperCase() || 'UNKNOWN LOCATION'}
-                handle="@memories"
+                handle={item.handle}
                 description={details.description}
                 date={details.date.toLocaleDateString('en-US', {
                     month: 'short',

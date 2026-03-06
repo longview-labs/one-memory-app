@@ -80,7 +80,7 @@ const fetchMemories = async (cursor?: string): Promise<GraphQLResponse> => {
         {
             validateData: (data) => {
                 const edges = data?.transactions?.edges
-                return Array.isArray(edges)
+                return Array.isArray(edges) && edges.length > 0
             }
         }
     )
@@ -414,6 +414,7 @@ const GalleryPage: React.FC = () => {
                 height: size,
                 imageUrl: arweaveData.url,
                 title: arweaveData.title,
+                handle: arweaveData.handle,
                 metadata: {
                     location: arweaveData.location,
                     date: arweaveData.date ? new Date(arweaveData.date) : new Date(),
@@ -455,6 +456,7 @@ const GalleryPage: React.FC = () => {
             y: index,
             width: 0,
             height: 0,
+            handle: arweaveData.handle,
             imageUrl: arweaveData.url,
             title: arweaveData.title,
             metadata: {

@@ -10,6 +10,7 @@ export interface CanvasItem {
     width: number
     height: number
     imageUrl: string
+    handle?: string
     title?: string
     metadata?: {
         date?: Date

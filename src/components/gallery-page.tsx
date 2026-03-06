@@ -695,7 +695,6 @@ const GalleryPage: React.FC = () => {
                         items={listItems}
                         onImageClick={handleImageClick}
                         onLoadMore={loadMoreMemories}
-                        onMount={handleListViewMount}
                         hasMore={hasNextPage}
                         isLoadingMore={isLoadingMore}
                     />

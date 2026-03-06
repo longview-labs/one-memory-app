@@ -687,7 +687,7 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload, in
                         </div>
                         <div className='relative w-full'>
                             <Input
-                                placeholder='Add Your Nickname'
+                                placeholder='Add your X/Instagram/TG handle'
                                 className='pl-8 pr-8 py-5 text-[#2C2C2C] !placeholder-[#2C2C2C] rounded-lg border border-gray-300 !bg-[#F5F5F5] focus-visible:ring-0 focus-visible:ring-offset-0'
                                 value={handle}
                                 onChange={(e) => setHandle(e.target.value)}

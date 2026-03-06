@@ -286,7 +286,7 @@ const ListViewComponent: React.FC<ListViewProps> = ({
                                 </button>
                             )
                         })}
-                        <div className="px-4 py-6 text-center text-white/50">
+                        <div className="px-4 py-6 text-white/50">
                             {isLoadingMore
                                 ? 'Loading more memories...'
                                 : hasMore

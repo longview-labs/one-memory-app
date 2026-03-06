@@ -28,6 +28,7 @@ const UploadedPage: React.FC = () => {
 
     const [memoryData, setMemoryData] = useState<MemoryData | null>(null)
     const [isLoading, setIsLoading] = useState(true)
+    const [isPreserving, setIsPreserving] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [linkCopied, setLinkCopied] = useState(false)
     const stampPreviewRef = useRef<HTMLDivElement>(null)
@@ -61,6 +62,7 @@ const UploadedPage: React.FC = () => {
 
         try {
             setIsLoading(true)
+            setIsPreserving(false)
             setError(null)
 
             // Fetch transaction metadata from Arweave
@@ -78,16 +80,15 @@ const UploadedPage: React.FC = () => {
 
             const { data } = await fetchGraphqlWithGatewayFallback<{ transaction: { id: string; tags: { name: string; value: string }[] } | null }>(
                 query,
-                { id: transactionId },
-                {
-                    validateData: (graphqlData) => !!graphqlData?.transaction
-                }
+                { id: transactionId }
             )
 
             const transaction = data.transaction
 
             if (!transaction) {
-                throw new Error('Transaction not found')
+                setMemoryData(null)
+                setIsPreserving(true)
+                return
             }
 
             // Parse tags
@@ -127,6 +128,12 @@ const UploadedPage: React.FC = () => {
             setMemoryData(memory)
         } catch (err) {
             console.error('Error loading memory:', err)
+            if (err instanceof Error && err.message === 'Transaction not found') {
+                setMemoryData(null)
+                setIsPreserving(true)
+                setError(null)
+                return
+            }
             setError(err instanceof Error ? err.message : 'Failed to load memory')
         } finally {
             setIsLoading(false)
@@ -227,6 +234,22 @@ const UploadedPage: React.FC = () => {
                     <div className="text-red-400 text-xl">⚠️</div>
                     <h2 className="text-white font-semibold text-lg">Error Loading Memory</h2>
                     <p className="text-white/70 text-sm">{error}</p>
+                    <Button onClick={handleGallery} className="bg-[#000DFF] text-white">
+                        <ImageIcon className="w-4 h-4 mr-2" />
+                        Go to Gallery
+                    </Button>
+                </div>
+            </div>
+        )
+    }
+
+    if (isPreserving) {
+        return (
+            <div className="min-h-screen bg-black flex items-center justify-center p-4">
+                <div className="text-center space-y-4 max-w-md">
+                    <div className="text-white text-xl">⏳</div>
+                    <h2 className="text-white font-semibold text-lg">We’re preserving your memory</h2>
+                    <p className="text-white/70 text-sm">Your transaction is still being finalized on Arweave. Please check back in about 5 minutes.</p>
                     <Button onClick={handleGallery} className="bg-[#000DFF] text-white">
                         <ImageIcon className="w-4 h-4 mr-2" />
                         Go to Gallery

@@ -803,8 +803,7 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload, in
                                     />
                                 </div>
                                 <div className='text-[13.5px] pl-1.5 antialiased font-medium text-[#B3B3B3] font-montserrat leading-4.5 tracking-tight'>
-                                    Your photo memory will be eligible to be shown alongside other
-                                    featured memories from the community
+                                    Uploaded photo memories will be publicly visible in the gallery alongside memories from the community
                                 </div>
                             </div>
                         </div>

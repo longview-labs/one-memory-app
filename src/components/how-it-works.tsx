@@ -30,7 +30,7 @@ const HowItWorks: React.FC = () => {
         <div className="space-y-8 font-montserrat text-white/80 leading-relaxed">
           <section>
             <h2 className="text-2xl font-semibold text-white mb-4">Arweave</h2>
-            <div>
+            <div className="space-y-4">
               <p>Memories uploaded to OneMemory are uploaded to a protocol called Arweave.</p>
 
               <p>

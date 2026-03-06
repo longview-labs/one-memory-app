@@ -19,74 +19,8 @@ import { cn } from '@/lib/utils'
 import { trackUploadFailed, trackUploadSucceeded } from '@/lib/analytics'
 import { buildArweaveTransactionUrl, fetchGraphqlWithGatewayFallback, fetchWithGatewayFallback, isLikelyImageContentType, validateArweaveImageWithFallback } from '@/lib/arweave-gateway'
 
-// GraphQL query for fetching Arweave transactions
-const MEMORIES_QUERY = `query GetMemories($after: String) {
-    transactions(
-        tags: [
-            {name: "App-Name", values: ["Memories-App"]}
-            {name: "App-Version", values: ["1.0.3"]}
-            {name: "App-Env", values: ["${import.meta.env.DEV ? "Dev" : "Prod"}"]}
-            {name: "Visibility", values: ["Public"]}
-        ],
-        after: $after
-        first: 50
-    ) {
-        edges {
-            cursor
-            node {
-                id
-                tags {
-                    name
-                    value
-                }
-            }
-        }
-        pageInfo {
-            hasNextPage
-        }
-    }
-}`
-
-// Interface for GraphQL response
-interface ArweaveTransaction {
-    id: string
-    tags: Array<{
-        name: string
-        value: string
-    }>
-}
-
-interface TransactionEdge {
-    cursor: string
-    node: ArweaveTransaction
-}
-
-interface GraphQLResponse {
-    data: {
-        transactions: {
-            edges: TransactionEdge[]
-            pageInfo: {
-                hasNextPage: boolean
-            }
-        }
-    }
-}
-
-// Function to fetch memories from Arweave
-const fetchMemories = async (cursor?: string): Promise<GraphQLResponse> => {
-    const { data } = await fetchGraphqlWithGatewayFallback<GraphQLResponse['data']>(
-        MEMORIES_QUERY,
-        cursor ? { after: cursor } : {},
-        {
-            validateData: (data) => {
-                const edges = data?.transactions?.edges
-                return Array.isArray(edges) && edges.length > 0
-            }
-        }
-    )
-
-    return { data }
-}
+import { buildArweaveTransactionUrl, fetchWithGatewayFallback, isLikelyImageContentType, validateArweaveImageWithFallback } from '@/lib/arweave-gateway'
+import { fetchMemories, type ArweaveTransaction } from '@/utils/memories'
 
 // Create a map to store real Arweave images
 const arweaveImageMap = new Map<string, { url: string; title: string; location?: string; description?: string; handle?: string; date?: string }>()
@@ -326,6 +260,12 @@ const GalleryPage: React.FC = () => {
         arweaveImageMap.clear()
         loadArweaveMemories()
     }, [loadArweaveMemories])
+
+    const handleListViewMount = useCallback(() => {
+        if (!isLoadingArweave && !isLoadingMore) {
+            loadArweaveMemories()
+        }
+    }, [isLoadingArweave, isLoadingMore, loadArweaveMemories])
 
     // Generate items in grid layout with only validated image URLs
     const items: CanvasItem[] = useMemo(() => {
@@ -763,6 +703,7 @@ const GalleryPage: React.FC = () => {
                         items={listItems}
                         onImageClick={handleImageClick}
                         onLoadMore={loadMoreMemories}
+                        onMount={handleListViewMount}
                         hasMore={hasNextPage}
                         isLoadingMore={isLoadingMore}
                     />

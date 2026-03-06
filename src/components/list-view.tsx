@@ -16,6 +16,7 @@ interface ListViewProps {
     items: CanvasItem[]
     onImageClick?: (item: CanvasItem) => void
     onLoadMore?: () => void | Promise<void>
+    onMount?: () => void | Promise<void>
     hasMore?: boolean
     isLoadingMore?: boolean
 }
@@ -24,6 +25,7 @@ const ListViewComponent: React.FC<ListViewProps> = ({
     items,
     onImageClick,
     onLoadMore,
+    onMount,
     hasMore = false,
     isLoadingMore = false,
 }) => {
@@ -34,6 +36,7 @@ const ListViewComponent: React.FC<ListViewProps> = ({
     const mobileStampRef = useRef<HTMLDivElement>(null)
     const selectionUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null)
     const loadMoreLockRef = useRef(false)
+    const hasTriggeredMountRef = useRef(false)
     const {
         capturedBlob,
         handleShare,
@@ -54,6 +57,13 @@ const ListViewComponent: React.FC<ListViewProps> = ({
             setSelectedItem(items[0])
         }
     }, [items, isMobile, selectedItem])
+
+    useEffect(() => {
+        if (!hasTriggeredMountRef.current) {
+            hasTriggeredMountRef.current = true
+            void onMount?.()
+        }
+    }, [onMount])
 
     const handleItemClick = (item: CanvasItem) => {
         setSelectedItem(item)

@@ -300,6 +300,7 @@ const UploadedPage: React.FC = () => {
                 </div>
 
                 <StampCaptureRenderer
+                    className={isMobile ? 'h-[900px]' : 'w-[900px]'}
                     hiddenHorizontalRef={hiddenHorizontalRef}
                     hiddenVerticalRef={hiddenVerticalRef}
                     isCapturing={isCapturing}

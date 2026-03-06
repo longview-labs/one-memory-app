@@ -402,6 +402,7 @@ const ListViewComponent: React.FC<ListViewProps> = ({
 
             {selectedItem && (
                 <StampCaptureRenderer
+                    className={isMobile ? 'w-[900px]' : 'h-[900px]'}
                     hiddenHorizontalRef={hiddenHorizontalRef}
                     hiddenVerticalRef={hiddenVerticalRef}
                     isCapturing={isCapturing}

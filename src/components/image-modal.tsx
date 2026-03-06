@@ -202,7 +202,7 @@ const ImageModal: React.FC<ImageModalProps> = ({ item, isOpen, onClose }) => {
                 hiddenHorizontalRef={hiddenHorizontalRef}
                 hiddenVerticalRef={hiddenVerticalRef}
                 isCapturing={isCapturing}
-                className={orientation === 'vertical' ? 'h-[50vh]' : 'w-[80vw] max-w-[950px]'}
+                className={orientation === 'vertical' ? 'h-[900px]' : 'w-[900px]'}
                 headline={item.title || 'Memory'}
                 location={details.location?.toUpperCase() || 'UNKNOWN LOCATION'}
                 handle={item.handle}

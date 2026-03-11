@@ -314,6 +314,7 @@ const ListViewComponent: React.FC<ListViewProps> = ({
                         headline={selectedItem.title || 'Untitled Memory'}
                         location={selectedItem.metadata?.location || 'Unknown location'}
                         handle={selectedItem.handle}
+                        handlePlatform={selectedItem.handlePlatform}
                         description={selectedItem.metadata?.description}
                         date={selectedItem.metadata?.date
                             ? new Date(selectedItem.metadata.date).toLocaleDateString('en-US', {
@@ -366,6 +367,7 @@ const ListViewComponent: React.FC<ListViewProps> = ({
                                     headline={selectedItem.title || 'Untitled Memory'}
                                     location={selectedItem.metadata?.location || 'Unknown location'}
                                     handle={selectedItem.handle}
+                                    handlePlatform={selectedItem.handlePlatform}
                                     description={selectedItem.metadata?.description}
                                     date={selectedItem.metadata?.date
                                         ? new Date(selectedItem.metadata.date).toLocaleDateString('en-US', {
@@ -409,6 +411,7 @@ const ListViewComponent: React.FC<ListViewProps> = ({
                     headline={selectedItem.title || 'Untitled Memory'}
                     location={selectedItem.metadata?.location?.toUpperCase() || 'UNKNOWN LOCATION'}
                     handle={selectedItem.handle}
+                    handlePlatform={selectedItem.handlePlatform}
                     description={selectedItem.metadata?.description}
                     date={selectedItem.metadata?.date
                         ? new Date(selectedItem.metadata.date).toLocaleDateString('en-US', {

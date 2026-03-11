@@ -1,5 +1,6 @@
 import React from 'react'
 import StampPreview from './stamp-preview'
+import type { HandlePlatform } from '@/utils/handle-links'
 
 interface StampCaptureRendererProps {
     hiddenHorizontalRef: React.RefObject<HTMLDivElement | null>
@@ -8,6 +9,7 @@ interface StampCaptureRendererProps {
     headline: string
     location: string
     handle: string
+    handlePlatform?: HandlePlatform
     description?: string
     date: string
     imageSrc: string
@@ -21,6 +23,7 @@ const StampCaptureRenderer: React.FC<StampCaptureRendererProps> = ({
     headline,
     location,
     handle,
+    handlePlatform,
     description,
     date,
     imageSrc,
@@ -49,6 +52,7 @@ const StampCaptureRenderer: React.FC<StampCaptureRendererProps> = ({
                     headline={headline}
                     location={location}
                     handle={handle}
+                    handlePlatform={handlePlatform}
                     description={description}
                     date={date}
                     imageSrc={imageSrc}
@@ -65,6 +69,7 @@ const StampCaptureRenderer: React.FC<StampCaptureRendererProps> = ({
                     headline={headline}
                     location={location}
                     handle={handle}
+                    handlePlatform={handlePlatform}
                     description={description}
                     date={date}
                     imageSrc={imageSrc}

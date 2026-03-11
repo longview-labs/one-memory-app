@@ -10,12 +10,14 @@ import StampCaptureRenderer from './stamp-capture-renderer'
 import { useStampCaptureShare } from '../hooks/use-stamp-capture-share'
 import { getMemoryShareUrl, getMemoryTweetText } from '../utils/share'
 import { buildArweaveTransactionUrl, fetchGraphqlWithGatewayFallback } from '@/lib/arweave-gateway'
+import { HANDLE_PLATFORM_TAG, normalizeHandlePlatform, type HandlePlatform } from '@/utils/handle-links'
 
 interface MemoryData {
     id: string
     title: string
     location: string
     handle: string
+    handlePlatform: HandlePlatform
     description?: string
     imageUrl: string
     isPublic: boolean
@@ -112,6 +114,7 @@ const UploadedPage: React.FC = () => {
                 title: tags.Title || 'Untitled Memory',
                 location: tags.Location || '',
                 handle: tags.Handle || '',
+                handlePlatform: normalizeHandlePlatform(tags[HANDLE_PLATFORM_TAG]),
                 description: tags.Description || '',
                 imageUrl: buildArweaveTransactionUrl(transaction.id),
                 isPublic: tags.Visibility === 'Public'
@@ -123,6 +126,7 @@ const UploadedPage: React.FC = () => {
                 title: tags.Title || 'Untitled Memory',
                 location: tags.Location || '',
                 handle: tags.Handle || '',
+                handlePlatform: normalizeHandlePlatform(tags[HANDLE_PLATFORM_TAG]),
                 description: tags.Description || '',
                 imageUrl: buildArweaveTransactionUrl(transaction.id),
                 date: new Date().toISOString(),
@@ -292,6 +296,7 @@ const UploadedPage: React.FC = () => {
                         headline={memoryData.title}
                         location={memoryData.location}
                         handle={memoryData.handle}
+                        handlePlatform={memoryData.handlePlatform}
                         description={memoryData.description}
                         date={new Date().toLocaleDateString()}
                         imageSrc={memoryData.imageUrl}
@@ -307,6 +312,7 @@ const UploadedPage: React.FC = () => {
                     headline={memoryData.title}
                     location={memoryData.location}
                     handle={memoryData.handle}
+                    handlePlatform={memoryData.handlePlatform}
                     description={memoryData.description}
                     date={new Date().toLocaleDateString()}
                     imageSrc={memoryData.imageUrl}

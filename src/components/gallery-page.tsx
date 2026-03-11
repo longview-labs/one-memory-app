@@ -20,9 +20,10 @@ import { buildArweaveTransactionUrl, fetchWithGatewayFallback, isLikelyImageCont
 import { triggerUploadSuccessConfetti } from '@/lib/confetti'
 import { fetchMemories, type ArweaveTransaction } from '@/utils/memories'
 import { uploadFileTurbo } from '@/lib/turbo'
+import { HANDLE_PLATFORM_TAG, normalizeHandlePlatform } from '@/utils/handle-links'
 
 // Create a map to store real Arweave images
-const arweaveImageMap = new Map<string, { url: string; title: string; location?: string; description?: string; handle?: string; date?: string }>()
+const arweaveImageMap = new Map<string, { url: string; title: string; location?: string; description?: string; handle?: string; handlePlatform?: 'x' | 'instagram' | 'telegram'; date?: string }>()
 
 // Compression options for image upload
 const compressionOptions = {
@@ -128,6 +129,7 @@ const GalleryPage: React.FC = () => {
                             location: parsedMemory.location,
                             description: parsedMemory.description,
                             handle: parsedMemory.handle,
+                            handlePlatform: normalizeHandlePlatform(parsedMemory.handlePlatform),
                             date: parsedMemory.date
                         })
                         // Mark as validated
@@ -187,6 +189,7 @@ const GalleryPage: React.FC = () => {
                             location: tags.Location,
                             description: tags.Description,
                             handle: tags.Handle,
+                            handlePlatform: normalizeHandlePlatform(tags[HANDLE_PLATFORM_TAG]),
                             date: tags.Date
                         })
                         return transaction.id
@@ -331,6 +334,7 @@ const GalleryPage: React.FC = () => {
                 imageUrl: arweaveData.url,
                 title: arweaveData.title,
                 handle: arweaveData.handle,
+                handlePlatform: arweaveData.handlePlatform,
                 metadata: {
                     location: arweaveData.location,
                     date: arweaveData.date ? new Date(arweaveData.date) : new Date(),
@@ -373,6 +377,7 @@ const GalleryPage: React.FC = () => {
             width: 0,
             height: 0,
             handle: arweaveData.handle,
+            handlePlatform: arweaveData.handlePlatform,
             imageUrl: arweaveData.url,
             title: arweaveData.title,
             metadata: {
@@ -495,6 +500,7 @@ const GalleryPage: React.FC = () => {
                 { name: "Title", value: uploadData.title },
                 { name: "Location", value: uploadData.location },
                 { name: "Handle", value: uploadData.handle },
+                { name: HANDLE_PLATFORM_TAG, value: uploadData.handlePlatform },
                 { name: "Visibility", value: uploadData.isPublic ? "Public" : "Not-Public" }
             ]
 

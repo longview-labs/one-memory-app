@@ -139,6 +139,7 @@ const ImageModal: React.FC<ImageModalProps> = ({ item, isOpen, onClose }) => {
                     headline={item.title || 'Memory'}
                     location={details.location?.toUpperCase() || 'UNKNOWN LOCATION'}
                     handle={item.handle}
+                    handlePlatform={item.handlePlatform}
                     description={details.description}
                     date={details.date.toLocaleDateString('en-US', {
                         month: 'short',
@@ -206,6 +207,7 @@ const ImageModal: React.FC<ImageModalProps> = ({ item, isOpen, onClose }) => {
                 headline={item.title || 'Memory'}
                 location={details.location?.toUpperCase() || 'UNKNOWN LOCATION'}
                 handle={item.handle}
+                handlePlatform={item.handlePlatform}
                 description={details.description}
                 date={details.date.toLocaleDateString('en-US', {
                     month: 'short',

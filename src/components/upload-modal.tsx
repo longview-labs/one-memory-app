@@ -35,6 +35,8 @@ import { Link } from 'react-router'
 import { Textarea } from './ui/textarea'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible'
 import { trackUploadSubmitted, type UploadSurface } from '@/lib/analytics'
+import { normalizeHandlePlatform, validateHandleForPlatform, type HandlePlatform } from '@/utils/handle-links'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select'
 
 interface UploadModalProps {
     isOpen: boolean
@@ -49,6 +51,7 @@ export interface UploadData {
     title: string
     location: string
     handle: string
+    handlePlatform: HandlePlatform
     description?: string
     isPublic: boolean
     datetime?: string
@@ -78,6 +81,7 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload, in
     const MAX_DESCRIPTION_LENGTH = 120
     const [location, setLocation] = useState('')
     const [handle, setHandle] = useState('')
+    const [handlePlatform, setHandlePlatform] = useState<HandlePlatform>('x')
     const [description, setDescription] = useState('')
     const [isDescriptionOpen, setIsDescriptionOpen] = useState(false)
     const [datetime, setDatetime] = useState('')
@@ -497,7 +501,8 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload, in
         // Check if actual values have been provided (not just defaults)
         const hasValidTitle = title.trim() && title !== defaultTitle
         const hasValidLocation = location.trim() && location.toUpperCase() !== defaultLocation
-        const hasValidHandle = handle.trim() && handle !== defaultHandle
+        const handleValidation = validateHandleForPlatform(handle, handlePlatform)
+        const hasValidHandle = handleValidation.isValid && handle !== defaultHandle
         const hasDescription = description.trim().length > 0
         const hasDatetime = Boolean(datetime)
         const isBaseValid = Boolean(selectedFile && hasValidTitle && hasValidLocation && hasValidHandle)
@@ -514,6 +519,11 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload, in
         })
 
         if (!selectedFile || !hasValidTitle || !hasValidLocation || !hasValidHandle) {
+            if (!handleValidation.isValid) {
+                setUploadError(handleValidation.error || 'Please enter a valid handle.')
+                return
+            }
+
             setUploadError('Please fill in all fields: title, location, and handle')
             return
         }
@@ -532,7 +542,8 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload, in
                 file: selectedFile,
                 title: title.trim(),
                 location: location.trim(),
-                handle: handle.trim(),
+                handle: handleValidation.normalizedHandle,
+                handlePlatform,
                 description: description.trim() || undefined,
                 isPublic: isPublic,
                 datetime: datetime || undefined
@@ -554,6 +565,7 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload, in
         setTitle('')
         setLocation('')
         setHandle('')
+        setHandlePlatform('x')
         setDescription('')
         setIsDescriptionOpen(false)
         setDatetime('')
@@ -583,7 +595,8 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload, in
         setMobileStep(1)
     }
 
-    const submitDisabled = !selectedFile || title.trim().length === 0 || title.trim().length > MAX_TITLE_LENGTH || description.length > MAX_DESCRIPTION_LENGTH || !handle.trim() || !location.trim() || isUploading || !!blockedReason
+    const currentHandleValidation = validateHandleForPlatform(handle, handlePlatform)
+    const submitDisabled = !selectedFile || title.trim().length === 0 || title.trim().length > MAX_TITLE_LENGTH || description.length > MAX_DESCRIPTION_LENGTH || !currentHandleValidation.isValid || !location.trim() || isUploading || !!blockedReason
 
     if (!isOpen) return null
 
@@ -631,6 +644,7 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload, in
                         headline={title}
                         location={location}
                         handle={handle}
+                        handlePlatform={handlePlatform}
                         description={description}
                         noText
                         date={datetime ? new Date(datetime).toLocaleDateString() : new Date().toLocaleDateString()}
@@ -662,7 +676,7 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload, in
                             </div>
                         </div>
                     </div>
-                    <div className={cn('grid gap-2 md:grid-cols-2')}>
+                    <div className="flex flex-col gap-2">
                         <div className='relative w-full'>
                             <button
                                 type="button"
@@ -685,20 +699,36 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload, in
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                             </svg>
                         </div>
-                        <div className='relative w-full'>
-                            <Input
-                                placeholder='Add your X/Instagram/TG handle'
-                                className='pl-8 pr-8 py-5 text-[#2C2C2C] !placeholder-[#2C2C2C] rounded-lg border border-gray-300 !bg-[#F5F5F5] focus-visible:ring-0 focus-visible:ring-offset-0'
-                                value={handle}
-                                onChange={(e) => setHandle(e.target.value)}
+                        <div className='w-full flex gap-2'>
+                            <Select
+                                value={handlePlatform}
+                                onValueChange={(value) => setHandlePlatform(normalizeHandlePlatform(value))}
                                 disabled={isUploading}
-                            />
-                            <svg className='absolute left-2 top-1/2 -translate-y-1/2 w-5 h-5 text-[#2C2C2C]' fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                            </svg>
-                            <svg className='absolute right-2 top-1/2 -translate-y-1/2 w-5 h-5 text-[#2C2C2C]' fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                            </svg>
+                            >
+                                <SelectTrigger className='flex-0 py-5 h-10 text-base text-[#2C2C2C] rounded-lg border border-gray-300 !bg-[#F5F5F5] focus-visible:ring-0 focus-visible:ring-offset-0'>
+                                    <SelectValue placeholder='Choose platform' />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value='x'>X</SelectItem>
+                                    <SelectItem value='instagram'>Instagram</SelectItem>
+                                    <SelectItem value='telegram'>Telegram</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <div className='relative w-full'>
+                                <Input
+                                    placeholder='Add your handle'
+                                    className='pl-8 pr-8 py-5 text-[#2C2C2C] !placeholder-[#2C2C2C] rounded-lg border border-gray-300 !bg-[#F5F5F5] focus-visible:ring-0 focus-visible:ring-offset-0'
+                                    value={handle}
+                                    onChange={(e) => setHandle(e.target.value)}
+                                    disabled={isUploading}
+                                />
+                                <svg className='absolute left-2 top-1/2 -translate-y-1/2 w-5 h-5 text-[#2C2C2C]' fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                                <svg className='absolute right-2 top-1/2 -translate-y-1/2 w-5 h-5 text-[#2C2C2C]' fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </div>
                         </div>
                         {/* <div className='relative'>
                             <Input
@@ -986,6 +1016,7 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload, in
                     location={location}
                     // size="lg"
                     handle={handle}
+                    handlePlatform={handlePlatform}
                     description={description}
                     date={datetime ? new Date(datetime).toLocaleDateString() : new Date().toLocaleDateString()}
                     imageSrc={previewUrl}

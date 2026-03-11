@@ -2,6 +2,7 @@ import React, { useRef, useState, useCallback, useEffect, useMemo, forwardRef, u
 import { useIsMobile } from '../hooks/use-mobile'
 import StampPreview from './stamp-preview'
 import postcardSquareBg from '@/assets/postcard-square.svg'
+import type { HandlePlatform } from '@/utils/handle-links'
 
 export interface CanvasItem {
     id: string
@@ -11,6 +12,7 @@ export interface CanvasItem {
     height: number
     imageUrl: string
     handle?: string
+    handlePlatform?: HandlePlatform
     title?: string
     metadata?: {
         date?: Date

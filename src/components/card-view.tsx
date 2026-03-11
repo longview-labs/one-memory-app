@@ -90,6 +90,7 @@ const CardView: React.FC<CardViewProps> = ({ items, onImageClick }) => {
                                             headline={item.title || 'Your Memory'}
                                             location={item.metadata?.location || 'EARTH'}
                                             handle={item.handle}
+                                            handlePlatform={item.handlePlatform}
                                             description={item.metadata?.description}
                                             date={formatDate(item.metadata?.date)}
                                             imageSrc={item.imageUrl}

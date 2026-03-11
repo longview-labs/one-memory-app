@@ -8,11 +8,17 @@ import { ImageUp, Upload, Loader2 } from "lucide-react";
 import { Input } from "./ui/input";
 import { useRef, useEffect, useState } from "react";
 import ArweaveImage from "./arweave-image";
+import {
+    buildHandleProfileUrl,
+    formatHandleForDisplay,
+    type HandlePlatform,
+} from "@/utils/handle-links";
 
 interface StampPreviewProps {
     headline: string;
     location: string;
     handle: string;
+    handlePlatform?: HandlePlatform;
     description?: string;
     date: string;
     imageSrc: string;
@@ -42,6 +48,7 @@ export default function StampPreview({
     headline,
     location,
     handle,
+    handlePlatform = 'x',
     description,
     date,
     imageSrc,
@@ -129,9 +136,9 @@ export default function StampPreview({
         };
     }, [layout, noText]);
 
-    if (!handle) {
-        handle = 'Your Nickname'
-    }
+    const hasHandle = Boolean(handle?.trim())
+    const displayHandle = formatHandleForDisplay(handle) || 'Your Nickname'
+    const handleLink = buildHandleProfileUrl(handle, handlePlatform)
     if (!headline) {
         headline = 'Your Memory'
     }
@@ -262,13 +269,27 @@ export default function StampPreview({
                                 style={{ fontSize: `calc(var(--stamp-scale) * 0.75em)` }}
                             >
                                 {/* <span onClick={() => document.getElementById("handle-text")?.focus()} className="font-light">{handle.startsWith("@") ? "" : "@"}</span> */}
-                                <span
-                                    // contentEditable
-                                    id="handle-text"
-                                    // suppressContentEditableWarning
-                                    onBlur={(e) => onHandleChange?.(e.currentTarget.textContent || '')}
-                                    className="font-light rounded-xs cursor-text focus:outline-2 outline-blue-400/50 inline-block min-w-[6ch]"
-                                >{handle}</span>
+                                {handleLink ? (
+                                    <a
+                                        id="handle-text"
+                                        href={handleLink}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="font-light rounded-xs cursor-pointer focus:outline-2 outline-blue-400/50 inline-block min-w-[6ch] hover:underline underline-offset-2"
+                                    >
+                                        {displayHandle}
+                                    </a>
+                                ) : (
+                                    <span
+                                        // contentEditable
+                                        id="handle-text"
+                                        // suppressContentEditableWarning
+                                        onBlur={(e) => onHandleChange?.(e.currentTarget.textContent || '')}
+                                        className={`font-light rounded-xs focus:outline-2 outline-blue-400/50 inline-block min-w-[6ch] ${hasHandle ? 'cursor-text' : 'cursor-default'}`}
+                                    >
+                                        {displayHandle}
+                                    </span>
+                                )}
                             </div>
                         </div>
                         {description.trim() && (

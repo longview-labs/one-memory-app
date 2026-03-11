@@ -13,6 +13,7 @@ import { trackUploadFailed, trackUploadSucceeded } from '@/lib/analytics'
 import { validateArweaveImageWithFallback } from '@/lib/arweave-gateway'
 import { triggerUploadSuccessConfetti } from '@/lib/confetti'
 import { uploadFileTurbo } from '@/lib/turbo'
+import { HANDLE_PLATFORM_TAG } from '@/utils/handle-links'
 
 interface MemoryData {
     id: string
@@ -129,6 +130,7 @@ const LandingPage: React.FC = () => {
                 { name: "Title", value: uploadData.title },
                 { name: "Location", value: uploadData.location },
                 { name: "Handle", value: uploadData.handle },
+                { name: HANDLE_PLATFORM_TAG, value: uploadData.handlePlatform },
                 { name: "Visibility", value: uploadData.isPublic ? "Public" : "Not-Public" }
             ]
 

@@ -9,7 +9,7 @@ export interface GraphqlTagFilter {
 }
 
 export const MEMORY_APP_NAME = 'Memories-App'
-export const MEMORY_APP_VERSION = '1.0.3'
+export const MEMORY_APP_VERSION = '1.0.4'
 
 export const getMemoryAppEnv = (): 'Dev' | 'Prod' => (import.meta.env.DEV ? 'Dev' : 'Prod')
 

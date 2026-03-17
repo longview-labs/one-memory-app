@@ -61,7 +61,7 @@ export const fetchMemories = async (cursor?: string): Promise<MemoriesResponse> 
         {
             validateData: (responseData) => {
                 const edges = responseData?.transactions?.edges
-                return Array.isArray(edges) && edges.length > 0
+                return Array.isArray(edges)
             },
         }
     )

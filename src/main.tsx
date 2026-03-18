@@ -82,7 +82,7 @@ function Main() {
 
 createRoot(document.getElementById('root')!).render(
   <PostHogProvider
-    apiKey={"phc_mYWx4nNJdTTIjuT105FmzMjKeDYDakFzgGQLhNrhJTe"}
+    apiKey={"phc_U7iSa4u2gvwfKXT0sKr0EL8WlW3aoEpFzqFVadj1ecK"}
     options={{
       api_host: "https://us.i.posthog.com",
       defaults: "2025-11-30",

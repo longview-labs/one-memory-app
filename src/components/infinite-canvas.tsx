@@ -3,6 +3,7 @@ import { useIsMobile } from '../hooks/use-mobile'
 import StampPreview from './stamp-preview'
 import postcardSquareBg from '@/assets/postcard-square.svg'
 import type { HandlePlatform } from '@/utils/handle-links'
+import { Lock } from 'lucide-react'
 
 export interface CanvasItem {
     id: string
@@ -20,6 +21,7 @@ export interface CanvasItem {
         camera?: string
         tags?: string[]
         description?: string
+        isPrivate?: boolean
     }
     arweaveTransactionId?: string
 }
@@ -203,6 +205,12 @@ const CanvasItemComponent = React.memo<{
                                 className="w-full h-full"
                             />
                         </div>
+                        {item.metadata?.isPrivate && (
+                            <div className="absolute top-4 left-3 bg-black/70 backdrop-blur-sm text-white text-[10px] font-medium px-1.5 py-0.5 rounded flex items-center gap-1 z-10">
+                                <Lock className="w-2.5 h-2.5" />
+                                Private
+                            </div>
+                        )}
                     </>
                 )}
             </div>

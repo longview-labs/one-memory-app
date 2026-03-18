@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import type { CanvasItem } from './infinite-canvas'
 import StampPreview from './stamp-preview'
+import { Lock } from 'lucide-react'
 import {
     Carousel,
     CarouselContent,
@@ -98,6 +99,12 @@ const CardView: React.FC<CardViewProps> = ({ items, onImageClick }) => {
                                             layout="vertical"
                                             className="w-full h-[70vh] md:h-[60vh] object-contain drop-shadow-2xl"
                                         />
+                                        {item.metadata?.isPrivate && (
+                                            <div className="absolute top-4 left-4 bg-black/70 backdrop-blur-sm text-white text-xs font-medium px-2 py-1 rounded flex items-center gap-1 z-10">
+                                                <Lock className="w-3 h-3" />
+                                                Private
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </CarouselItem>

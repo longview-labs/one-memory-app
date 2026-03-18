@@ -10,10 +10,11 @@ import StampPreview from './stamp-preview'
 import { QuickWallet } from 'quick-wallet'
 import { loadNSFWModel } from '@/lib/nsfw'
 import { trackUploadFailed, trackUploadSucceeded } from '@/lib/analytics'
-import { validateArweaveImageWithFallback } from '@/lib/arweave-gateway'
+import { buildArweaveTransactionUrl, validateArweaveImageWithFallback } from '@/lib/arweave-gateway'
 import { triggerUploadSuccessConfetti } from '@/lib/confetti'
 import { uploadFileTurbo } from '@/lib/turbo'
 import { HANDLE_PLATFORM_TAG } from '@/utils/handle-links'
+import { saveLocalMemory } from '@/lib/local-memories'
 
 interface MemoryData {
     id: string
@@ -187,6 +188,17 @@ const LandingPage: React.FC = () => {
                     memoryId: id,
                     surface: 'landing',
                     durationMs: Date.now() - uploadStartedAt,
+                    isPublic: uploadData.isPublic,
+                })
+                saveLocalMemory({
+                    id,
+                    title: uploadData.title,
+                    location: uploadData.location,
+                    handle: uploadData.handle,
+                    handlePlatform: uploadData.handlePlatform,
+                    description: uploadData.description,
+                    imageUrl: buildArweaveTransactionUrl(id),
+                    date: uploadData.datetime || new Date().toISOString(),
                     isPublic: uploadData.isPublic,
                 })
                 console.log('✅ Image validated successfully, navigating to view page')

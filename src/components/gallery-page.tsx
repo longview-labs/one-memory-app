@@ -21,9 +21,10 @@ import { triggerUploadSuccessConfetti } from '@/lib/confetti'
 import { fetchMemories, type ArweaveTransaction } from '@/utils/memories'
 import { uploadFileTurbo } from '@/lib/turbo'
 import { HANDLE_PLATFORM_TAG, normalizeHandlePlatform } from '@/utils/handle-links'
+import { saveLocalMemory, getLocalMemories } from '@/lib/local-memories'
 
 // Create a map to store real Arweave images
-const arweaveImageMap = new Map<string, { url: string; title: string; location?: string; description?: string; handle?: string; handlePlatform?: 'x' | 'instagram' | 'telegram'; date?: string }>()
+const arweaveImageMap = new Map<string, { url: string; title: string; location?: string; description?: string; handle?: string; handlePlatform?: 'x' | 'instagram' | 'telegram'; date?: string; isPrivate?: boolean }>()
 
 // Compression options for image upload
 const compressionOptions = {
@@ -73,7 +74,6 @@ const GalleryPage: React.FC = () => {
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
     const [isUploading, setIsUploading] = useState(false)
     const [prevConnected, setPrevConnected] = useState(null)
-    const [localStorageMemory, setLocalStorageMemory] = useState<any>(null)
     const [isDragging, setIsDragging] = useState(false)
     const [initialFile, setInitialFile] = useState<File | null>(null)
     const canvasRef = useRef<InfiniteCanvasRef>(null)
@@ -112,39 +112,6 @@ const GalleryPage: React.FC = () => {
     //         }
     //     }
     // }, [api, connected, address])
-
-    // Load localStorage memory if highlighted
-    useEffect(() => {
-        if (highlightId) {
-            const storedMemory = localStorage.getItem('lastUploadedMemory')
-            if (storedMemory) {
-                try {
-                    const parsedMemory = JSON.parse(storedMemory)
-                    if (parsedMemory.id === highlightId) {
-                        setLocalStorageMemory(parsedMemory)
-                        // Add to arweaveImageMap
-                        arweaveImageMap.set(parsedMemory.id, {
-                            url: parsedMemory.imageUrl,
-                            title: parsedMemory.title,
-                            location: parsedMemory.location,
-                            description: parsedMemory.description,
-                            handle: parsedMemory.handle,
-                            handlePlatform: normalizeHandlePlatform(parsedMemory.handlePlatform),
-                            date: parsedMemory.date
-                        })
-                        // Mark as validated
-                        setValidatedImages(prev => {
-                            const newSet = new Set(prev)
-                            newSet.add(parsedMemory.id)
-                            return newSet
-                        })
-                    }
-                } catch (err) {
-                    console.error('Failed to parse localStorage memory:', err)
-                }
-            }
-        }
-    }, [highlightId])
 
     // Load Arweave memories
     const loadArweaveMemories = useCallback(async (cursor?: string, append = false) => {
@@ -340,7 +307,8 @@ const GalleryPage: React.FC = () => {
                     date: arweaveData.date ? new Date(arweaveData.date) : new Date(),
                     description: arweaveData.description,
                     tags: [],
-                    camera: undefined
+                    camera: undefined,
+                    isPrivate: arweaveData.isPrivate
                 }
             }
         })
@@ -386,6 +354,7 @@ const GalleryPage: React.FC = () => {
                 description: arweaveData.description,
                 tags: [],
                 camera: undefined,
+                isPrivate: arweaveData.isPrivate,
             },
         }))
     }, [validatedImages])
@@ -394,6 +363,39 @@ const GalleryPage: React.FC = () => {
     useEffect(() => {
         loadArweaveMemories()
     }, [loadArweaveMemories])
+
+    // Inject local memories after Arweave load completes
+    useEffect(() => {
+        if (isLoadingArweave) return
+        const localMemories = getLocalMemories()
+        if (localMemories.length === 0) return
+
+        let added = 0
+        for (const mem of localMemories) {
+            if (!arweaveImageMap.has(mem.id)) {
+                arweaveImageMap.set(mem.id, {
+                    url: mem.imageUrl,
+                    title: mem.title,
+                    location: mem.location,
+                    description: mem.description,
+                    handle: mem.handle,
+                    handlePlatform: mem.handlePlatform,
+                    date: mem.date,
+                    isPrivate: !mem.isPublic,
+                })
+                added++
+            }
+        }
+        if (added > 0) {
+            setValidatedImages(prev => {
+                const newSet = new Set(prev)
+                localMemories.forEach(mem => {
+                    if (!prev.has(mem.id)) newSet.add(mem.id)
+                })
+                return newSet
+            })
+        }
+    }, [isLoadingArweave])
 
     // Center on highlighted item when items are loaded
     useEffect(() => {
@@ -545,6 +547,17 @@ const GalleryPage: React.FC = () => {
                     memoryId: id,
                     surface: 'gallery',
                     durationMs: Date.now() - uploadStartedAt,
+                    isPublic: uploadData.isPublic,
+                })
+                saveLocalMemory({
+                    id,
+                    title: uploadData.title,
+                    location: uploadData.location,
+                    handle: uploadData.handle,
+                    handlePlatform: uploadData.handlePlatform,
+                    description: uploadData.description,
+                    imageUrl: buildArweaveTransactionUrl(id),
+                    date: uploadData.datetime || new Date().toISOString(),
                     isPublic: uploadData.isPublic,
                 })
                 console.log('✅ Image validated successfully, navigating to view page')

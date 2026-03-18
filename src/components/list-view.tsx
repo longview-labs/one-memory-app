@@ -5,7 +5,7 @@ import StampPreview from './stamp-preview'
 import { Dialog, DialogContent } from './ui/dialog'
 import { ScrollArea } from './ui/scroll-area'
 import { Button } from './ui/button'
-import { Share2 } from 'lucide-react'
+import { Share2, Lock } from 'lucide-react'
 import CopySharePopup from './copy-share-popup'
 import type { CanvasItem } from './infinite-canvas'
 import StampCaptureRenderer from './stamp-capture-renderer'
@@ -277,13 +277,24 @@ const ListViewComponent: React.FC<ListViewProps> = ({
 
                                         {/* Content */}
                                         <div className="flex-1 min-w-0 max-w-screen">
-                                            <h3 className={cn(
-                                                isMobile ? "text-4xl" : "text-6xl",
-                                                "font-medium font-instrument truncate mb-1 transition-colors duration-200",
-                                                isSelected ? "text-white" : "text-white/40"
-                                            )}>
-                                                {headline}
-                                            </h3>
+                                            <div className="flex items-center gap-3">
+                                                <h3 className={cn(
+                                                    isMobile ? "text-4xl" : "text-6xl",
+                                                    "font-medium font-instrument truncate mb-1 transition-colors duration-200",
+                                                    isSelected ? "text-white" : "text-white/40"
+                                                )}>
+                                                    {headline}
+                                                </h3>
+                                                {item.metadata?.isPrivate && (
+                                                    <span className={cn(
+                                                        "flex items-center gap-1 text-xs font-medium tracking-normal px-2 py-0.5 rounded shrink-0",
+                                                        isSelected ? "bg-white/20 text-white" : "bg-white/10 text-white/40"
+                                                    )}>
+                                                        <Lock className="w-3 h-3" />
+                                                        Private
+                                                    </span>
+                                                )}
+                                            </div>
                                         </div>
 
                                         {/* Selection indicator */}
@@ -296,7 +307,7 @@ const ListViewComponent: React.FC<ListViewProps> = ({
                                 </button>
                             )
                         })}
-                        <div className="px-4 py-6 text-white/50">
+                        <div className="px-4 py-6 text-white/50 tracking-normal">
                             {isLoadingMore
                                 ? 'Loading more memories...'
                                 : hasMore

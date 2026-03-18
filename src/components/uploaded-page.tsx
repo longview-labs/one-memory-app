@@ -11,6 +11,7 @@ import { useStampCaptureShare } from '../hooks/use-stamp-capture-share'
 import { getMemoryShareUrl, getMemoryTweetText } from '../utils/share'
 import { buildArweaveTransactionUrl, fetchGraphqlWithGatewayFallback } from '@/lib/arweave-gateway'
 import { HANDLE_PLATFORM_TAG, normalizeHandlePlatform, type HandlePlatform } from '@/utils/handle-links'
+import { saveLocalMemory } from '@/lib/local-memories'
 
 interface MemoryData {
     id: string
@@ -120,8 +121,7 @@ const UploadedPage: React.FC = () => {
                 isPublic: tags.Visibility === 'Public'
             }
 
-            // Save to localStorage for gallery to use
-            const uploadedMemory = {
+            saveLocalMemory({
                 id: transaction.id,
                 title: tags.Title || 'Untitled Memory',
                 location: tags.Location || '',
@@ -129,10 +129,9 @@ const UploadedPage: React.FC = () => {
                 handlePlatform: normalizeHandlePlatform(tags[HANDLE_PLATFORM_TAG]),
                 description: tags.Description || '',
                 imageUrl: buildArweaveTransactionUrl(transaction.id),
-                date: new Date().toISOString(),
-                txid: transaction.id
-            }
-            localStorage.setItem('lastUploadedMemory', JSON.stringify(uploadedMemory))
+                date: tags.Date || new Date().toISOString(),
+                isPublic: tags.Visibility === 'Public',
+            })
 
             setMemoryData(memory)
         } catch (err) {

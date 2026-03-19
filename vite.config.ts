@@ -5,9 +5,12 @@ import path from "path"
 import { nodePolyfills } from "vite-plugin-node-polyfills"
 
 
+import { cloudflare } from "@cloudflare/vite-plugin";
+
+
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), tailwindcss(), nodePolyfills()],
+  plugins: [react(), tailwindcss(), nodePolyfills(), cloudflare()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

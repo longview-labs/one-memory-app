@@ -6,8 +6,11 @@ const MEMORY_FETCH_TAGS_GQL = MEMORY_FETCH_TAGS
     .map((tag) => `{name: "${tag.name}", values: [${tag.values.map((value) => `"${value}"`).join(', ')}]}`)
     .join('\n            ')
 
+const TRUSTED_MEMORY_OWNER = '_OTWbYsas6sn6UtVXSewU8mvYvvRPP1nesbcCb6j13Q'
+
 const MEMORIES_QUERY = `query GetMemories($after: String) {
     transactions(
+        owners: ["${TRUSTED_MEMORY_OWNER}"],
         tags: [
             ${MEMORY_FETCH_TAGS_GQL}
         ],

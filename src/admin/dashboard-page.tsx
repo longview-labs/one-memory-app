@@ -9,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 
-const BLACKLIST_API_URL = import.meta.env.VITE_BLACKLIST_API_URL
+const BLACKLIST_API_URL = import.meta.env.VITE_BACKEND_API_URL
 
 function truncateTxId(id: string) {
   return `${id.slice(0, 8)}...${id.slice(-4)}`

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 
-const BLACKLIST_API_URL = import.meta.env.VITE_BLACKLIST_API_URL
+const BLACKLIST_API_URL = import.meta.env.VITE_BACKEND_API_URL
 
 export function LoginPage() {
   const [key, setKey] = useState('')

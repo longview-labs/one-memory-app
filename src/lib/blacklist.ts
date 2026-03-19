@@ -1,4 +1,4 @@
-const BLACKLIST_API_URL = import.meta.env.VITE_BLACKLIST_API_URL;
+const BLACKLIST_API_URL = import.meta.env.VITE_BACKEND_API_URL;
 
 let cachedBlacklist: Set<string> | null = null;
 let cacheTimestamp = 0;

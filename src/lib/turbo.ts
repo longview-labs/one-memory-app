@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_BLACKLIST_API_URL
+const API_URL = import.meta.env.VITE_BACKEND_API_URL
 
 export async function uploadFileTurbo(file: File, tags: { name: string, value: string }[] = []) {
   const { ArconnectSigner, TurboFactory } = await import('@ardrive/turbo-sdk/web')
@@ -30,7 +30,7 @@ export interface UploadMetadata {
 
 export async function uploadViaBackend(file: File, metadata: UploadMetadata): Promise<string> {
   if (!API_URL) {
-    throw new Error('VITE_BLACKLIST_API_URL is not configured')
+    throw new Error('VITE_BACKEND_API_URL is not configured')
   }
 
   const formData = new FormData()

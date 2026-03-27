@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback, useRef, useTransition, useEffect } from 'react'
-import { useNavigate, useSearchParams } from 'react-router'
+import { useSearchParams } from 'react-router'
 import InfiniteCanvas, { type CanvasItem, type InfiniteCanvasRef } from './infinite-canvas'
 import ImageModal from './image-modal'
 import ListViewComponent from './list-view'
@@ -7,37 +7,18 @@ import CardView from './card-view'
 import { clearImageUrlCache } from '../utils/generate-grid'
 import { useIsMobile } from '../hooks/use-mobile'
 import { Button } from './ui/button'
-import { Card, CardContent } from './ui/card'
-import { Home, Plus, User, RefreshCw, Upload, LayoutGrid, List, LayoutList } from 'lucide-react'
+import { RefreshCw } from 'lucide-react'
 import { MemoriesLogo } from './landing-page'
-import UploadModal, { type UploadData } from './upload-modal'
-import imageCompression from 'browser-image-compression'
 import permanent from "@/assets/permanent-light.png"
-import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
-import { trackUploadFailed, trackUploadSucceeded } from '@/lib/analytics'
-import { buildArweaveTransactionUrl, fetchWithGatewayFallback, isLikelyImageContentType, validateArweaveImageWithFallback } from '@/lib/arweave-gateway'
-import { triggerUploadSuccessConfetti } from '@/lib/confetti'
+import { buildArweaveTransactionUrl, fetchWithGatewayFallback, isLikelyImageContentType } from '@/lib/arweave-gateway'
 import { fetchMemories, type ArweaveTransaction } from '@/utils/memories'
-import { uploadViaBackend } from '@/lib/turbo'
 import { HANDLE_PLATFORM_TAG, normalizeHandlePlatform } from '@/utils/handle-links'
-import { saveLocalMemory, getLocalMemories } from '@/lib/local-memories'
+import { getLocalMemories } from '@/lib/local-memories'
 import { fetchBlacklist } from '@/lib/blacklist'
 
 // Create a map to store real Arweave images
 const arweaveImageMap = new Map<string, { url: string; title: string; location?: string; description?: string; handle?: string; handlePlatform?: 'x' | 'instagram' | 'telegram'; date?: string; isPrivate?: boolean }>()
-
-// Compression options for image upload
-const compressionOptions = {
-    maxSizeMB: 0.1, // Hard limit of 100KB
-    maxWidthOrHeight: 1200, // Balanced resolution for quality vs size
-    useWebWorker: true,
-    initialQuality: 0.9, // High quality starting point
-    maxIteration: 30, // More iterations to find optimal balance
-    fileType: 'image/jpeg', // JPEG for better compression
-    alwaysKeepResolution: false, // Allow smart resolution adjustment
-    preserveExif: false, // Remove EXIF data to save space
-}
 
 // Function to check if a URL is a valid image
 const getValidImageUrl = async (url: string): Promise<string | null> => {
@@ -72,14 +53,10 @@ const GalleryPage: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [viewMode, setViewMode] = useState<'grid' | 'list' | 'card'>('grid')
     const [startTime, setStartTime] = useState(Date.now())
-    const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
-    const [isUploading, setIsUploading] = useState(false)
     const [prevConnected, setPrevConnected] = useState(null)
-    const [isDragging, setIsDragging] = useState(false)
-    const [initialFile, setInitialFile] = useState<File | null>(null)
     const canvasRef = useRef<InfiniteCanvasRef>(null)
     const isMobile = useIsMobile()
-    const navigate = useNavigate()
+
 
     // useEffect(() => {
     //     const now = Date.now()
@@ -229,23 +206,12 @@ const GalleryPage: React.FC = () => {
         const arweaveArray = Array.from(arweaveImageMap.entries())
 
         // Calculate optimal items per row to fill the grid completely
-        // Add 1 to account for the upload button
-        const totalItemCount = validImageCount + 1
+        const totalItemCount = validImageCount
         const itemsPerRow = Math.ceil(Math.sqrt(totalItemCount))
 
         // Calculate how many items we need to fill the last row
         const remainder = totalItemCount % itemsPerRow
         const itemsNeeded = remainder === 0 ? 0 : itemsPerRow - remainder
-
-        // Insert upload button at a strategic position - roughly every 20-25 items
-        // Position it somewhere in the middle third of visible items for better visibility
-        const uploadButtonPosition = validImageCount > 20
-            ? Math.floor(validImageCount * 0.33) + Math.floor(Math.random() * Math.min(10, validImageCount * 0.2))
-            : validImageCount > 5
-                ? Math.floor(validImageCount / 2)
-                : validImageCount > 0
-                    ? Math.floor(Math.random() * (validImageCount - 1)) + 1
-                    : 0
 
         // Duplicate items to fill empty spaces in the grid
         const itemsToRender = [...arweaveArray]
@@ -285,12 +251,10 @@ const GalleryPage: React.FC = () => {
             }
         }
 
-        // Map all items including the upload button
+        // Map all items
         const allItems: CanvasItem[] = itemsToRender.map(([transactionId, arweaveData], index) => {
-            // Adjust index if we're past the upload button position
-            const actualIndex = index >= uploadButtonPosition ? index + 1 : index
-            const row = Math.floor(actualIndex / itemsPerRow)
-            const col = actualIndex % itemsPerRow
+            const row = Math.floor(index / itemsPerRow)
+            const col = index % itemsPerRow
             const x = col * (size + spacing)
             const y = row * (size + spacing)
 
@@ -314,27 +278,6 @@ const GalleryPage: React.FC = () => {
                 }
             }
         })
-
-        // Insert upload button item at the random position
-        const uploadButtonRow = Math.floor(uploadButtonPosition / itemsPerRow)
-        const uploadButtonCol = uploadButtonPosition % itemsPerRow
-        const uploadButtonItem: CanvasItem = {
-            id: 'upload-button',
-            x: uploadButtonCol * (size + spacing),
-            y: uploadButtonRow * (size + spacing),
-            width: size,
-            height: size,
-            imageUrl: '', // Empty for button
-            title: 'Upload Memory',
-            metadata: {
-                description: 'Click to upload a new memory',
-                tags: ['upload'],
-                date: new Date(),
-                camera: undefined
-            }
-        }
-
-        allItems.splice(uploadButtonPosition, 0, uploadButtonItem)
 
         return allItems
     }, [isMobile, validatedImages])
@@ -429,33 +372,8 @@ const GalleryPage: React.FC = () => {
         }
     }, [])
 
-    // Handle upload button click
-    const handleUploadClick = useCallback(() => {
-        // Create a file input element
-        const input = document.createElement('input')
-        input.type = 'file'
-        input.accept = 'image/*'
-        input.onchange = (e: Event) => {
-            const target = e.target as HTMLInputElement
-            const files = target.files
-            if (files && files.length > 0) {
-                const file = files[0]
-                setInitialFile(file)
-                setIsUploadModalOpen(true)
-            }
-        }
-        input.click()
-    }, [])
-
     // Handle image click to open modal
     const handleImageClick = useCallback((item: CanvasItem) => {
-        // Check if this is the upload button (including tiled versions)
-        if (item.id.startsWith('upload-button')) {
-            // Trigger file selection instead of directly opening modal
-            handleUploadClick()
-            return
-        }
-
         // Reset canvas dragging state when opening modal
         if (canvasRef.current) {
             canvasRef.current.resetDragState()
@@ -464,7 +382,7 @@ const GalleryPage: React.FC = () => {
         console.log(viewMode)
         if (!viewMode.includes("list"))
             setIsModalOpen(true)
-    }, [viewMode, handleUploadClick])
+    }, [viewMode])
 
     // Handle modal close
     const handleModalClose = useCallback(() => {
@@ -472,141 +390,10 @@ const GalleryPage: React.FC = () => {
         setSelectedImage(null)
     }, [])
 
-    // Validate that the image is accessible on Arweave
-    const validateArweaveImage = async (transactionId: string, maxRetries = 10, retryDelay = 3000): Promise<boolean> => {
-        console.log(`Validating Arweave image with gateway fallback: ${transactionId}`)
-        const result = await validateArweaveImageWithFallback(transactionId, maxRetries, retryDelay)
-        return result.isValid
-    }
-
-    // Handle image upload
-    const handleImageUpload = async (file: File, uploadData: UploadData): Promise<string> => {
-        let finalFile = file;
-
-        // Only compress if file is larger than 100KB
-        if (file.size > 100 * 1024) {
-            finalFile = await imageCompression(file, compressionOptions);
-        }
-
-        const id = await uploadViaBackend(finalFile, {
-            title: uploadData.title,
-            location: uploadData.location,
-            handle: uploadData.handle,
-            handlePlatform: uploadData.handlePlatform,
-            isPublic: uploadData.isPublic,
-            description: uploadData.description,
-        });
-
-        return id;
-    }
-
-    // Handle modal upload
-    const handleModalUpload = async (uploadData: UploadData) => {
-
-        setIsUploading(true)
-        const uploadStartedAt = Date.now()
-        let uploadStage: 'upload' | 'validation' = 'upload'
-
-        try {
-            console.log('Upload data:', uploadData)
-
-            // Upload the image to Arweave
-            const id = await handleImageUpload(uploadData.file, uploadData)
-            console.log('Upload completed, transaction ID:', id);
-
-            if (!id) {
-                throw new Error('Upload failed: No transaction ID returned')
-            }
-
-            // Validate that the image is accessible on Arweave before navigating
-            uploadStage = 'validation'
-            console.log('🔍 Validating image accessibility on Arweave...')
-            const isValid = await validateArweaveImage(id)
-
-            if (isValid) {
-                trackUploadSucceeded({
-                    memoryId: id,
-                    surface: 'gallery',
-                    durationMs: Date.now() - uploadStartedAt,
-                    isPublic: uploadData.isPublic,
-                })
-                saveLocalMemory({
-                    id,
-                    title: uploadData.title,
-                    location: uploadData.location,
-                    handle: uploadData.handle,
-                    handlePlatform: uploadData.handlePlatform,
-                    description: uploadData.description,
-                    imageUrl: buildArweaveTransactionUrl(id),
-                    date: uploadData.datetime || new Date().toISOString(),
-                    isPublic: uploadData.isPublic,
-                })
-                console.log('✅ Image validated successfully, navigating to view page')
-                triggerUploadSuccessConfetti()
-                // Close modal before navigating
-                setIsUploadModalOpen(false)
-                setIsUploading(false)
-                navigate(`/view/${id}`)
-            } else {
-                throw new Error('Image upload completed but failed to validate accessibility on Arweave. Please try again.')
-            }
-        } catch (error) {
-            console.error('Upload failed:', error)
-            trackUploadFailed({
-                surface: 'gallery',
-                stage: uploadStage,
-                errorMessage: error instanceof Error ? error.message : 'Unknown upload error',
-            })
-            toast.error(error instanceof Error ? error.message : 'Upload failed. Please try again.')
-            throw error
-        } finally {
-            setIsUploading(false)
-        }
-    }
-
-    const handleDragOver = (e: React.DragEvent) => {
-        e.preventDefault()
-        e.stopPropagation()
-        setIsDragging(true)
-    }
-
-    const handleDragLeave = (e: React.DragEvent) => {
-        e.preventDefault()
-        e.stopPropagation()
-        setIsDragging(false)
-    }
-
-    const handleDrop = (e: React.DragEvent) => {
-        e.preventDefault()
-        e.stopPropagation()
-        setIsDragging(false)
-
-        const files = e.dataTransfer.files
-        if (files && files.length > 0) {
-            const file = files[0]
-            if (file.type.startsWith('image/')) {
-                setInitialFile(file)
-                setIsUploadModalOpen(true)
-            }
-        }
-    }
-
     return (
         <div
             className="relative w-full h-screen bg-black"
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
         >
-            {/* Drag overlay */}
-            {isDragging && (
-                <div className="fixed inset-0 z-50 bg-[#000DFF]/20 backdrop-blur-sm flex items-center justify-center pointer-events-none">
-                    <div className="bg-black/90 border-2 border-dashed border-[#000DFF] rounded-2xl px-16 py-12 flex flex-col items-center gap-6">
-                        <Upload className="w-20 h-20 text-[#000DFF]" />
-                        <p className="text-3xl font-semibold text-white">Drop your photo here</p>
-                    </div>
-                </div>
-            )}
 
             <div className={cn('absolute !top-6 !left-6 z-40')}>
                 <MemoriesLogo theme='light' />
@@ -642,16 +429,9 @@ const GalleryPage: React.FC = () => {
                     <div className="text-center max-w-md mx-4">
                         <div className="text-white/60 text-6xl mb-6">📸</div>
                         <div className="text-white text-xl font-medium mb-4">No image memories found</div>
-                        <div className="text-white/70 text-sm mb-6">
-                            Upload some image memories to see them here in your gallery.
+                        <div className="text-white/70 text-sm">
+                            No image memories have been uploaded yet.
                         </div>
-                        <Button
-                            onClick={() => navigate('/')}
-                            className="bg-white/20 hover:bg-white/30 text-white border-white/20"
-                        >
-                            <Plus className="w-4 h-4 mr-2" />
-                            Upload Image Memory
-                        </Button>
                     </div>
                 </div>
             )}
@@ -691,24 +471,11 @@ const GalleryPage: React.FC = () => {
             {arweaveImageMap.size > 0 && viewMode === 'card' && (
                 <div className="absolute inset-0 z-10 overflow-visible">
                     <CardView
-                        items={items.filter(item => item.id !== 'upload-button')}
+                        items={items}
                         onImageClick={handleImageClick}
                     />
                 </div>
             )}
-
-            {/* Floating Action Button */}
-            <div className={cn(`fixed z-20 top-5 right-5`)}>
-                <Button
-                    className="bg-[#000DFF] text-white border border-[#2C2C2C] px-10 py-6 text-base font-medium rounded-md flex items-center gap-2"
-                    variant="ghost"
-                    size="lg"
-                    onClick={handleUploadClick}
-                >
-                    <Upload className="w-4 h-4" />
-                    {!isMobile ? "Preserve your memories" : "Upload"}
-                </Button>
-            </div>
 
             <div className={`fixed z-20 bottom-10 right-5`}>
                 {/* button group- grid, list, card */}
@@ -756,18 +523,6 @@ const GalleryPage: React.FC = () => {
                 item={selectedImage}
                 isOpen={isModalOpen}
                 onClose={handleModalClose}
-            />
-
-            {/* Upload Modal */}
-            <UploadModal
-                isOpen={isUploadModalOpen}
-                onClose={() => {
-                    setIsUploadModalOpen(false)
-                    setInitialFile(null)
-                }}
-                onUpload={handleModalUpload}
-                initialFile={initialFile}
-                uploadSurface='gallery'
             />
 
         </div >

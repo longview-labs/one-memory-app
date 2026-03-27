@@ -1,19 +1,9 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router'
-import { Upload } from 'lucide-react'
 import { Button } from './ui/button'
-import UploadModal, { type UploadData } from './upload-modal'
 import { useIsMobile } from '../hooks/use-mobile'
-import imageCompression from 'browser-image-compression';
-import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import StampPreview from './stamp-preview'
-import { loadNSFWModel } from '@/lib/nsfw'
-import { trackUploadFailed, trackUploadSucceeded } from '@/lib/analytics'
-import { buildArweaveTransactionUrl, validateArweaveImageWithFallback } from '@/lib/arweave-gateway'
-import { triggerUploadSuccessConfetti } from '@/lib/confetti'
-import { uploadViaBackend } from '@/lib/turbo'
-import { saveLocalMemory } from '@/lib/local-memories'
 
 interface MemoryData {
     id: string
@@ -60,17 +50,6 @@ const presetMemories: MemoryData[] = [
 ]
 
 
-const compressionOptions = {
-    maxSizeMB: 0.1, // Hard limit of 100KB
-    maxWidthOrHeight: 1200, // Balanced resolution for quality vs size
-    useWebWorker: true,
-    initialQuality: 0.9, // High quality starting point
-    maxIteration: 30, // More iterations to find optimal balance
-    fileType: 'image/jpeg', // JPEG for better compression
-    alwaysKeepResolution: false, // Allow smart resolution adjustment
-    preserveExif: false, // Remove EXIF data to save space
-}
-
 export function MemoriesLogo({ theme = 'light' }: { theme?: 'light' | 'dark' }) {
     return <Link to="/"> <div className={cn("flex items-center drop-shadow shadow-black gap-4", theme === 'dark' ? 'invert' : '')}>
         <div className="h-9 flex-shrink-0">
@@ -87,159 +66,10 @@ export function MemoriesLogo({ theme = 'light' }: { theme?: 'light' | 'dark' }) 
 }
 
 const LandingPage: React.FC = () => {
-    const [isUploading, setIsUploading] = useState(false)
-    const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
     const [randomMemories, setRandomMemories] = useState<MemoryData[]>([])
     const [isLoadingMemories, setIsLoadingMemories] = useState(true)
-    const [prevConnected, setPrevConnected] = useState(null)
-    const [startTime, setStartTime] = useState(Date.now())
     const isMobile = useIsMobile()
-    const [isDragging, setIsDragging] = useState(false)
-    const [initialFile, setInitialFile] = useState<File | null>(null)
     const navigate = useNavigate()
-
-    // Preload NSFW model when landing page mounts
-    useEffect(() => {
-        loadNSFWModel().catch(error => {
-            console.error('Failed to preload NSFW model:', error)
-        })
-    }, [])
-
-    async function handleImageUpload(file: File, uploadData: UploadData): Promise<string> {
-        let finalFile = file;
-
-        // Only compress if file is larger than 100KB
-        if (file.size > 100 * 1024) {
-            finalFile = await imageCompression(file, compressionOptions);
-        }
-
-        const id = await uploadViaBackend(finalFile, {
-            title: uploadData.title,
-            location: uploadData.location,
-            handle: uploadData.handle,
-            handlePlatform: uploadData.handlePlatform,
-            isPublic: uploadData.isPublic,
-            description: uploadData.description,
-            datetime: uploadData.datetime,
-        });
-
-        return id;
-    }
-
-
-    // Function to validate that the image is accessible on Arweave
-    const validateArweaveImage = async (transactionId: string, maxRetries = 10, retryDelay = 3000): Promise<boolean> => {
-        console.log(`Validating Arweave image with gateway fallback: ${transactionId}`)
-        const result = await validateArweaveImageWithFallback(transactionId, maxRetries, retryDelay)
-        return result.isValid
-    }
-
-    const handleModalUpload = async (uploadData: UploadData) => {
-
-        setIsUploading(true)
-        const uploadStartedAt = Date.now()
-        let uploadStage: 'upload' | 'validation' = 'upload'
-
-        try {
-            console.log('Upload data:', uploadData)
-
-            // Upload the image to Arweave
-            const id = await handleImageUpload(uploadData.file, uploadData)
-            console.log('Upload completed, transaction ID:', id);
-
-            if (!id) {
-                throw new Error('Upload failed: No transaction ID returned')
-            }
-
-            // Validate that the image is accessible on Arweave before navigating
-            uploadStage = 'validation'
-            console.log('🔍 Validating image accessibility on Arweave...')
-            const isValid = await validateArweaveImage(id)
-
-            if (isValid) {
-                trackUploadSucceeded({
-                    memoryId: id,
-                    surface: 'landing',
-                    durationMs: Date.now() - uploadStartedAt,
-                    isPublic: uploadData.isPublic,
-                })
-                saveLocalMemory({
-                    id,
-                    title: uploadData.title,
-                    location: uploadData.location,
-                    handle: uploadData.handle,
-                    handlePlatform: uploadData.handlePlatform,
-                    description: uploadData.description,
-                    imageUrl: buildArweaveTransactionUrl(id),
-                    date: uploadData.datetime || new Date().toISOString(),
-                    isPublic: uploadData.isPublic,
-                })
-                console.log('✅ Image validated successfully, navigating to view page')
-                triggerUploadSuccessConfetti()
-                // Close modal before navigating
-                setIsUploadModalOpen(false)
-                setIsUploading(false)
-                navigate(`/view/${id}`)
-            } else {
-                throw new Error('Image upload completed but failed to validate accessibility on Arweave. Please try again.')
-            }
-        } catch (error) {
-            console.error('Upload failed:', error)
-            trackUploadFailed({
-                surface: 'landing',
-                stage: uploadStage,
-                errorMessage: error instanceof Error ? error.message : 'Unknown upload error',
-            })
-            toast.error(error instanceof Error ? error.message : 'Upload failed. Please try again.')
-            throw error
-        } finally {
-            setIsUploading(false)
-        }
-    }
-
-    const handleUploadClick = () => {
-        // Create a file input element
-        const input = document.createElement('input')
-        input.type = 'file'
-        input.accept = 'image/*'
-        input.onchange = (e: Event) => {
-            const target = e.target as HTMLInputElement
-            const files = target.files
-            if (files && files.length > 0) {
-                const file = files[0]
-                setInitialFile(file)
-                setIsUploadModalOpen(true)
-            }
-        }
-        input.click()
-    }
-
-    const handleDragOver = (e: React.DragEvent) => {
-        e.preventDefault()
-        e.stopPropagation()
-        setIsDragging(true)
-    }
-
-    const handleDragLeave = (e: React.DragEvent) => {
-        e.preventDefault()
-        e.stopPropagation()
-        setIsDragging(false)
-    }
-
-    const handleDrop = (e: React.DragEvent) => {
-        e.preventDefault()
-        e.stopPropagation()
-        setIsDragging(false)
-
-        const files = e.dataTransfer.files
-        if (files && files.length > 0) {
-            const file = files[0]
-            if (file.type.startsWith('image/')) {
-                setInitialFile(file)
-                setIsUploadModalOpen(true)
-            }
-        }
-    }
 
     const handleExploreGallery = useCallback(() => {
         navigate('/gallery')
@@ -267,19 +97,7 @@ const LandingPage: React.FC = () => {
     return (
         <div
             className="flex flex-col min-h-screen h-auto md:h-screen bg-black relative overflow-scroll md:overflow-hidden"
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
         >
-            {/* Drag overlay */}
-            {isDragging && (
-                <div className="fixed inset-0 z-50 bg-[#000DFF]/20 backdrop-blur-sm flex items-center justify-center pointer-events-none">
-                    <div className="bg-black/90 border-2 border-dashed border-[#000DFF] rounded-2xl px-16 py-12 flex flex-col items-center gap-6">
-                        <Upload className="w-20 h-20 text-[#000DFF]" />
-                        <p className="text-3xl font-semibold text-white">Drop your photo here</p>
-                    </div>
-                </div>
-            )}
 
             {/* Header */}
             <div className="z-10 left-0 right-0 p-6">
@@ -306,17 +124,9 @@ const LandingPage: React.FC = () => {
                                 className="bg-[#000DFF] h-16 text-white border border-[#2C2C2C] px-10 py-4 text-xl font-semibold rounded-md flex items-center gap-3 hover:bg-[#0008CC] transition-colors"
                                 variant="ghost"
                                 size="lg"
-                                onClick={handleUploadClick}
-                            >
-                                <Upload className="w-5 h-5" />
-                                Preserve your memory
-                            </Button>
-                            <Button
-                                variant="link"
                                 onClick={handleExploreGallery}
-                                className="p-0 m-0 text-xl text-muted-foreground font-normal hover:no-underline hover:text-foreground"
                             >
-                                or <span className="underline">explore the gallery</span>
+                                Explore the gallery
                             </Button>
                         </div>
                     </div>
@@ -416,18 +226,6 @@ const LandingPage: React.FC = () => {
                     <img src={permanentImage} alt="Permanent" className="h-14" draggable={false} />
                 </div>
             </div> */}
-
-            {/* Upload Modal */}
-            <UploadModal
-                isOpen={isUploadModalOpen}
-                onClose={() => {
-                    setIsUploadModalOpen(false)
-                    setInitialFile(null)
-                }}
-                onUpload={handleModalUpload}
-                initialFile={initialFile}
-                uploadSurface='landing'
-            />
 
             <div className='absolute bottom-2 left-2 z-20 flex items-center text-muted-foreground/80'>
                 <Link to="/how-it-works" className='px-1'>How it works</Link>

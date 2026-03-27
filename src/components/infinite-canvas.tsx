@@ -1,7 +1,6 @@
 import React, { useRef, useState, useCallback, useEffect, useMemo, forwardRef, useImperativeHandle } from 'react'
 import { useIsMobile } from '../hooks/use-mobile'
 import StampPreview from './stamp-preview'
-import postcardSquareBg from '@/assets/postcard-square.svg'
 import type { HandlePlatform } from '@/utils/handle-links'
 import { Lock } from 'lucide-react'
 
@@ -46,32 +45,17 @@ const CanvasItemComponent = React.memo<{
     onMouseDown: (e: React.MouseEvent) => void
     onImageClick?: (item: CanvasItem) => void
 }>(({ item, onMouseDown, onImageClick }) => {
-    // Check if this is the upload button - do this FIRST
-    const isUploadButton = item.id.startsWith('upload-button')
-
     const [imageLoaded, setImageLoaded] = React.useState(false)
     const [imageError, setImageError] = React.useState(false)
     const [dragStart, setDragStart] = React.useState<{ x: number; y: number } | null>(null)
     const [touchStart, setTouchStart] = React.useState<{ x: number; y: number } | null>(null)
 
     const handleMouseDown = (e: React.MouseEvent) => {
-        // For upload button, don't track drag start - just let canvas handle panning
-        if (isUploadButton) {
-            onMouseDown(e)
-            return
-        }
         setDragStart({ x: e.clientX, y: e.clientY })
         onMouseDown(e)
     }
 
     const handleMouseUp = (e: React.MouseEvent) => {
-        // For upload button, trigger click immediately
-        if (isUploadButton && onImageClick) {
-            e.stopPropagation()
-            onImageClick(item)
-            return
-        }
-
         if (dragStart && onImageClick) {
             const dragDistance = Math.sqrt(
                 Math.pow(e.clientX - dragStart.x, 2) + Math.pow(e.clientY - dragStart.y, 2)
@@ -87,10 +71,6 @@ const CanvasItemComponent = React.memo<{
     }
 
     const handleTouchStart = (e: React.TouchEvent) => {
-        // For upload button, don't track touch start
-        if (isUploadButton) {
-            return
-        }
         if (e.touches.length === 1) {
             const touch = e.touches[0]
             setTouchStart({ x: touch.clientX, y: touch.clientY })
@@ -98,13 +78,6 @@ const CanvasItemComponent = React.memo<{
     }
 
     const handleTouchEnd = (e: React.TouchEvent) => {
-        // For upload button, trigger tap immediately
-        if (isUploadButton && onImageClick) {
-            e.stopPropagation()
-            onImageClick(item)
-            return
-        }
-
         if (touchStart && onImageClick && e.changedTouches.length === 1) {
             const touch = e.changedTouches[0]
             const dragDistance = Math.sqrt(
@@ -136,82 +109,38 @@ const CanvasItemComponent = React.memo<{
             onTouchEnd={handleTouchEnd}
         >
             <div className="relative w-full h-full transition-all duration-300 hover:scale-105">
-                {isUploadButton ? (
-                    // Render upload button as a stamp
-                    <div
-                        className="relative w-full h-full aspect-square"
-                        style={{
-                            backgroundImage: `url(${postcardSquareBg})`,
-                            backgroundSize: 'contain',
-                            backgroundRepeat: 'no-repeat',
-                            backgroundPosition: 'center',
-                            maskImage: `url(${postcardSquareBg})`,
-                            maskSize: 'contain',
-                            maskRepeat: 'no-repeat',
-                            maskPosition: 'center',
-                            WebkitMaskImage: `url(${postcardSquareBg})`,
-                            WebkitMaskSize: 'contain',
-                            WebkitMaskRepeat: 'no-repeat',
-                            WebkitMaskPosition: 'center',
-                        }}
-                    >
-                        <div className="absolute inset-0 bg-gradient-to-br from-[#000DFF] to-[#0008CC] flex flex-col items-center justify-center p-4">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="w-10 h-10 text-white mb-3"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                                />
-                            </svg>
-                            <span className="text-white font-medium text-xs text-center leading-tight">
-                                Preserve your<br />memory forever
-                            </span>
-                        </div>
+                {!imageLoaded && !imageError && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-gray-800/50">
+                        <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                     </div>
-                ) : (
-                    // Render normal image item
-                    <>
-                        {!imageLoaded && !imageError && (
-                            <div className="absolute inset-0 flex items-center justify-center bg-gray-800/50">
-                                <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                            </div>
-                        )}
-                        {imageError && (
-                            <div className="absolute inset-0 flex items-center justify-center bg-gray-800/50 text-white/70 text-sm">
-                                Failed to load
-                            </div>
-                        )}
-                        <div
-                            className={`transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
-                            style={{ height: '100%', width: '100%' }}
-                        >
-                            <StampPreview
-                                headline=""
-                                location=""
-                                handle=""
-                                date=""
-                                imageSrc={item.imageUrl}
-                                layout="vertical"
-                                noText={true}
-                                onLoad={() => setImageLoaded(true)}
-                                onError={() => setImageError(true)}
-                                className="w-full h-full"
-                            />
-                        </div>
-                        {item.metadata?.isPrivate && (
-                            <div className="absolute top-4 left-3 bg-black/70 backdrop-blur-sm text-white text-[10px] font-medium px-1.5 py-0.5 rounded flex items-center gap-1 z-10">
-                                <Lock className="w-2.5 h-2.5" />
-                                Private
-                            </div>
-                        )}
-                    </>
+                )}
+                {imageError && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-gray-800/50 text-white/70 text-sm">
+                        Failed to load
+                    </div>
+                )}
+                <div
+                    className={`transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+                    style={{ height: '100%', width: '100%' }}
+                >
+                    <StampPreview
+                        headline=""
+                        location=""
+                        handle=""
+                        date=""
+                        imageSrc={item.imageUrl}
+                        layout="vertical"
+                        noText={true}
+                        onLoad={() => setImageLoaded(true)}
+                        onError={() => setImageError(true)}
+                        className="w-full h-full"
+                    />
+                </div>
+                {item.metadata?.isPrivate && (
+                    <div className="absolute top-4 left-3 bg-black/70 backdrop-blur-sm text-white text-[10px] font-medium px-1.5 py-0.5 rounded flex items-center gap-1 z-10">
+                        <Lock className="w-2.5 h-2.5" />
+                        Private
+                    </div>
                 )}
             </div>
         </div>
